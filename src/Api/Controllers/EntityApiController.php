@@ -2,14 +2,13 @@
 
 namespace Saritasa\Api\Controllers;
 
-use App\Api\Transformers\BaseTransformer;
-use App\Http\Traits\PaginatedOutput;
 use App\Models\Support\PagingType;
-use App\Repositories\Base\IRepository;
 use Dingo\Api\Http\Request;
 use Dingo\Api\Http\Response;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\ValidationException;
+use Saritasa\Transformers\IDataTransformer;
+use Saritasa\Transformers\Traits\PaginatedOutput;
 
 abstract class EntityApiController extends BaseApiController implements IApiResourceController
 {
@@ -34,11 +33,10 @@ abstract class EntityApiController extends BaseApiController implements IApiReso
      */
     private $paging = PagingType::PAGINATOR;
 
-    public function __construct(IRepository $repository, BaseTransformer $transformer = null)
+    public function __construct(string $modelClass, IDataTransformer $transformer = null)
     {
         parent::__construct($transformer);
-        $this->repo = $repository;
-        $this->modelClass = $repository->getModelClass();
+        $this->modelClass = $modelClass;
     }
 
     public function index(Request $request): Response
