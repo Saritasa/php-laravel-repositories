@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Repositories\Base;
+namespace Saritasa\Repositories\Base;
 
 use App\Exceptions\RepositoryException;
 use App\Models\Support\CursorRequest;

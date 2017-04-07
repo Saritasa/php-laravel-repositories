@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Repositories\Base;
+namespace Saritasa\Repositories\Base;
 
 use App\Models\Support\CursorRequest;
 use App\Models\Support\CursorResult;

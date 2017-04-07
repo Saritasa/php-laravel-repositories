@@ -1,16 +1,16 @@
 <?php
 
-namespace App\Repositories\Base;
+namespace Saritasa\Repositories\Base;
 
 use App\Exceptions\RepositoryException;
 use App\Models\Support\CursorRequest;
 use App\Models\Support\CursorResult;
 use App\Models\Support\PagingInfo;
-use Cache;
 use Closure;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 
 class CachingRepository implements IRepository
 {

@@ -1,9 +1,8 @@
 <?php
-namespace App\Repositories;
+namespace Saritasa\Repositories;
 
 use App\Models\User;
-use App\Repositories\Base\Repository;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Saritasa\Repositories\Base\Repository;
 
 class UserRepository extends Repository
 {

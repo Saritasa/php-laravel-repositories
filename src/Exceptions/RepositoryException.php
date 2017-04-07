@@ -2,7 +2,7 @@
 
 namespace App\Exceptions;
 
-use App\Repositories\Base\IRepository;
+use Saritasa\Repositories\Base\IRepository;
 use Exception;
 
 /**
