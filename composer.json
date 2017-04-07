@@ -1,5 +1,5 @@
 {
-    "name": "saritasa/php-laravel-repositories",
+    "name": "saritasa/laravel-repositories",
     "type": "library",
     "description": "Saritasa repository pattern implementation for Laravel",
     "keywords": ["laravel", "repository", "database"],

@@ -4,10 +4,10 @@ Implementation of Repository pattern for Laravel (on top of Eloquent)
 
 ## Laravel 5.x
 
-Install the ``saritasa/php-laravel-repositories`` package:
+Install the ```saritasa/laravel-repositories``` package:
 
 ```bash
-$ composer require saritasa/php-laravel-repositories
+$ composer require saritasa/laravel-repositories
 ```
 
 ## Available classes
