@@ -2,8 +2,6 @@
 
 namespace Saritasa\Api\Controllers;
 
-use App\Api\Transformers\BaseTransformer;
-use App\Exceptions\ValidationException;
 use App\Models\User;
 use Dingo\Api\Http\Request;
 use Dingo\Api\Http\Response;
@@ -12,6 +10,8 @@ use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller;
 use Illuminate\Contracts\Validation\Validator;
+use Saritasa\DingoApi\Exceptions\ValidationException;
+use Saritasa\Transformers\BaseTransformer;
 use Saritasa\Transformers\IDataTransformer;
 
 /**

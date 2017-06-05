@@ -2,11 +2,12 @@
 
 namespace Saritasa\Api\Controllers;
 
-use App\Models\Support\PagingType;
 use Dingo\Api\Http\Request;
 use Dingo\Api\Http\Response;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Validation\ValidationException;
+use Saritasa\DingoApi\Exceptions\ValidationException;
+use Saritasa\Enums\PagingType;
+use Saritasa\Repositories\Base\IRepository;
 use Saritasa\Transformers\IDataTransformer;
 use Saritasa\Transformers\Traits\PaginatedOutput;
 

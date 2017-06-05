@@ -3,13 +3,13 @@
 namespace Saritasa\Repositories\Base;
 
 use App\Exceptions\RepositoryException;
-use App\Models\Support\CursorRequest;
-use App\Models\Support\CursorResult;
-use App\Models\Support\PagingInfo;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Saritasa\DingoApi\Paging\CursorRequest;
+use Saritasa\DingoApi\Paging\CursorResult;
+use Saritasa\DingoApi\Paging\PagingInfo;
 
 /**
  * Superclass for any repository.

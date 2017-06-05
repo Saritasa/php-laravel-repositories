@@ -2,14 +2,12 @@
 
 namespace Saritasa\Repositories\Base;
 
-use App\Models\Support\CursorRequest;
-use App\Models\Support\CursorResult;
-use App\Models\Support\PagingInfo;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
-use League\Fractal\Pagination\CursorInterface;
+use Saritasa\DingoApi\Paging\CursorRequest;
+use Saritasa\DingoApi\Paging\CursorResult;
+use Saritasa\DingoApi\Paging\PagingInfo;
 
 /**
  * Generic model repository contract - manages stored entities

@@ -2,12 +2,12 @@
 
 namespace Saritasa\Api\Controllers;
 
-use App\Api\Transformers\BaseTransformer;
 use Dingo\Api\Http\Request;
 use Illuminate\Contracts\Auth\Access\Gate;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Saritasa\Repositories\Base\IRepository;
+use Saritasa\Transformers\BaseTransformer;
 
 /**
  * Verify, if user can has permission to perform requested operation

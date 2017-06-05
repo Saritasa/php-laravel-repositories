@@ -3,14 +3,14 @@
 namespace Saritasa\Repositories\Base;
 
 use App\Exceptions\RepositoryException;
-use App\Models\Support\CursorRequest;
-use App\Models\Support\CursorResult;
-use App\Models\Support\PagingInfo;
 use Closure;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Saritasa\DingoApi\Paging\CursorRequest;
+use Saritasa\DingoApi\Paging\CursorResult;
+use Saritasa\DingoApi\Paging\PagingInfo;
 
 class CachingRepository implements IRepository
 {
