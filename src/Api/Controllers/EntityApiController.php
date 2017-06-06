@@ -9,7 +9,7 @@ use Saritasa\DingoApi\Exceptions\ValidationException;
 use Saritasa\Enums\PagingType;
 use Saritasa\Repositories\Base\IRepository;
 use Saritasa\Transformers\IDataTransformer;
-use Saritasa\Transformers\Traits\PaginatedOutput;
+use Saritasa\DingoApi\Traits\PaginatedOutput;
 
 abstract class EntityApiController extends BaseApiController implements IApiResourceController
 {

@@ -20,7 +20,8 @@ class SecureResourceApiController extends EntityApiController
 
     public function __construct(Gate $gate, IRepository $repository, BaseTransformer $transformer = null)
     {
-        parent::__construct($repository, $transformer);
+        parent::__construct($repository->getModelClass(), $transformer);
+        $this->repo = $repository;
         $gate->getPolicyFor($this->modelClass);
     }
 
