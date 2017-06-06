@@ -8,7 +8,7 @@ use Dingo\Api\Http\Response;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\ValidationException;
 use Saritasa\Transformers\IDataTransformer;
-use Saritasa\Transformers\Traits\PaginatedOutput;
+use Saritasa\DingoApi\Traits\PaginatedOutput;
 
 abstract class EntityApiController extends BaseApiController implements IApiResourceController
 {
