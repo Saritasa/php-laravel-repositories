@@ -1,6 +1,8 @@
 1.0.5
 -----
-Weeker typing requiredments for paging
+- Weeker typing requiredments for paging
+- Remove clones of BaseApiController
+- Implement cursor pagination as in Fractal samples
 
 1.0.4
 -----

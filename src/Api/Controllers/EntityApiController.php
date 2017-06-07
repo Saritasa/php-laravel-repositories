@@ -7,6 +7,7 @@ use Dingo\Api\Http\Response;
 use Illuminate\Database\Eloquent\Model;
 use Saritasa\DingoApi\Exceptions\ValidationException;
 use Saritasa\Enums\PagingType;
+use Saritasa\Laravel\Controllers\Api\BaseApiController;
 use Saritasa\Repositories\Base\IRepository;
 use Saritasa\Transformers\IDataTransformer;
 use Saritasa\DingoApi\Traits\PaginatedOutput;
