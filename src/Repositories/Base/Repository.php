@@ -8,6 +8,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Saritasa\DingoApi\Paging\CursorRequest;
 use Saritasa\DingoApi\Paging\CursorResult;
+use Saritasa\DingoApi\Paging\CursorResultAuto;
 use Saritasa\DingoApi\Paging\PagingInfo;
 
 /**
@@ -166,7 +167,7 @@ class Repository implements IRepository
         $idKey = $this->model->getKeyName();
         $items = $query->where($idKey, '>', $cursor->current)->take($cursor->pageSize)->get();
 
-        return new CursorResult($cursor, $items);
+        return new CursorResultAuto($cursor, $items);
     }
 
     private function query(): \Illuminate\Database\Eloquent\Builder
