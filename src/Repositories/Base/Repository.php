@@ -4,7 +4,6 @@ namespace Saritasa\Repositories\Base;
 
 use App\Exceptions\RepositoryException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Saritasa\DingoApi\Paging\CursorRequest;
@@ -157,7 +156,12 @@ class Repository implements IRepository
         return $this->toCursorResult($cursor, $this->query()->where($fieldValues));
     }
 
-    protected function toCursorResult(CursorRequest $cursor, Builder $query): CursorResult
+    /**
+     * @param CursorRequest $cursor Requested cursor parameters
+     * @param \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder $query
+     * @return CursorResult
+     */
+    protected function toCursorResult(CursorRequest $cursor, $query): CursorResult
     {
         $idKey = $this->model->getKeyName();
         $items = $query->where($idKey, '>=', $cursor->current)->take($cursor->pageSize)->get();
@@ -165,7 +169,7 @@ class Repository implements IRepository
         return new CursorResult($cursor, $items);
     }
 
-    private function query(): Builder
+    private function query(): \Illuminate\Database\Eloquent\Builder
     {
         return $this->model->query();
     }
