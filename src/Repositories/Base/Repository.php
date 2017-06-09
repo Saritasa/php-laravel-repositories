@@ -2,7 +2,7 @@
 
 namespace Saritasa\Repositories\Base;
 
-use App\Exceptions\RepositoryException;
+use Saritasa\Exceptions\RepositoryException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Model;

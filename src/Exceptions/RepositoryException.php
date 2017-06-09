@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Exceptions;
+namespace Saritasa\Exceptions;
 
 use Saritasa\Repositories\Base\IRepository;
 use Exception;
