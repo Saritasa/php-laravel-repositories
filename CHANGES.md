@@ -1,3 +1,5 @@
+# Changes History
+
 1.0.7
 -----
 Fix RepositoryException namespace
@@ -22,13 +24,12 @@ Fix namespaces
 
 1.0.1, 1.0.2
 -----
-- Update dependencies versions
+Update dependencies versions
 
 1.0.0
 -----
 
-- Initial version:
-
-IRepository
-Base Repository implementation
-Repository Exception
+Initial version:
+* IRepository
+* Base Repository implementation
+* Repository Exception
