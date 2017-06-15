@@ -164,7 +164,7 @@ class Repository implements IRepository
      */
     protected function toCursorResult(CursorRequest $cursor, $query): CursorResult
     {
-        $idKey = $this->model->getKeyName();
+        $idKey = $this->model->getQualifiedKeyName();
         $items = $query->where($idKey, '>', $cursor->current)->take($cursor->pageSize)->get();
 
         return new CursorResultAuto($cursor, $items);
