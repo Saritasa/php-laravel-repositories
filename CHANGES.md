@@ -1,5 +1,9 @@
 # Changes History
 
+1.0.8
+-----
+Fix cursor pagination with joined queries
+
 1.0.7
 -----
 Fix RepositoryException namespace
