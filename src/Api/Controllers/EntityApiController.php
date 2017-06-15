@@ -33,7 +33,7 @@ abstract class EntityApiController extends BaseApiController implements IApiReso
      * If lists output should be paginated by default
      * @var PagingType
      */
-    private $paging = PagingType::PAGINATOR;
+    protected $paging = PagingType::PAGINATOR;
 
     public function __construct(string $modelClass, IDataTransformer $transformer = null)
     {
