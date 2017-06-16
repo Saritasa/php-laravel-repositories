@@ -5,6 +5,7 @@ namespace Saritasa\Repositories\Base;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Saritasa\DingoApi\Paging\CursorRequest;
@@ -178,8 +179,10 @@ class Repository implements IRepository
         $fakeModel->setTable(DB::raw("(" . $wrappedQuery->toSql() . ") AS " . $this->model->getTable()));
         /** @var Builder $query */
         $query = $fakeModel->newQuery()
-            // Ignore trashed filter in wrapper-query, original query already contains it if needed
-            ->withTrashed()
+            // Ignore trashed filter in wrapper-query if model uses SoftDeletes, original query already contains it if needed
+            ->when(in_array(SoftDeletes::class, class_uses_recursive($fakeModel)), function ($query) {
+                return $query->withTrashed();
+            })
             ->mergeBindings($wrappedQuery)
             ->where($idKey, '>', $cursor->current);
         $items = $query->take($cursor->pageSize)
