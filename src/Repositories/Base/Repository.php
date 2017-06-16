@@ -172,18 +172,18 @@ class Repository implements IRepository
         $wrappedQuery = DB::table(
             DB::raw("(SELECT *, (@row := @row+1) as {$idKey} FROM (" . $originalQuery->toSql() . ") as t1) as t2")
         )->mergeBindings(($originalQuery instanceof Builder) ? $originalQuery : $originalQuery->getQuery());
-
         /** @var Model $fakeModel */
-        $originalClass = get_class($this->model);
-        $fakeModel = new $originalClass();
+        $fakeModel = new $this->model();
         $fakeModel->setKeyName($idKey);
         $fakeModel->setTable(DB::raw("(" . $wrappedQuery->toSql() . ") AS " . $this->model->getTable()));
-        $items = $fakeModel->newQuery()
+        /** @var Builder $query */
+        $query = $fakeModel->newQuery()
+            // Ignore trashed filter in wrapper-query, original query already contains it if needed
+            ->withTrashed()
             ->mergeBindings($wrappedQuery)
-            ->where($idKey, '>', $cursor->current)
-            ->take($cursor->pageSize)
+            ->where($idKey, '>', $cursor->current);
+        $items = $query->take($cursor->pageSize)
             ->get();
-
         return new CursorResultAuto($cursor, $items);
     }
     
