@@ -1,5 +1,9 @@
 # Changes History
 
+1.0.9
+-----
+Add cursor result response with custom ordered query
+
 1.0.8
 -----
 Fix cursor pagination with joined queries
