@@ -2,7 +2,7 @@
 
 1.0.10
 -----
-Fix issue when model not used SoftDeletes trait
+Fix issue when model doesn't use SoftDeletes trait
 
 1.0.9
 -----
