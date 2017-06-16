@@ -1,5 +1,9 @@
 # Changes History
 
+1.0.10
+-----
+Fix issue when model not used SoftDeletes trait
+
 1.0.9
 -----
 Add cursor result response with custom ordered query
