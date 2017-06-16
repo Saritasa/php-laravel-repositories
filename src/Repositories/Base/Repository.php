@@ -2,14 +2,16 @@
 
 namespace Saritasa\Repositories\Base;
 
-use Saritasa\Exceptions\RepositoryException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Saritasa\DingoApi\Paging\CursorRequest;
 use Saritasa\DingoApi\Paging\CursorResult;
 use Saritasa\DingoApi\Paging\CursorResultAuto;
 use Saritasa\DingoApi\Paging\PagingInfo;
+use Saritasa\Exceptions\RepositoryException;
 
 /**
  * Superclass for any repository.
@@ -157,6 +159,34 @@ class Repository implements IRepository
         return $this->toCursorResult($cursor, $this->query()->where($fieldValues));
     }
 
+    /**
+     * Wrap the query to support cursor pagination with custom sort.
+     * @param CursorRequest $cursor Requested cursor parameters
+     * @param \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder $originalQuery
+     * @return CursorResult
+     */
+    protected function toCursorResultWithCustomSort(CursorRequest $cursor, $originalQuery)
+    {
+        $originalQuery->crossJoin(DB::raw('(SELECT @row := 1) as r'));
+        $idKey = CursorResultAuto::ROW_NUM_COLUMN;
+        $wrappedQuery = DB::table(
+            DB::raw("(SELECT *, (@row := @row+1) as {$idKey} FROM (" . $originalQuery->toSql() . ") as t1) as t2")
+        )->mergeBindings(($originalQuery instanceof Builder) ? $originalQuery : $originalQuery->getQuery());
+        /** @var Model $fakeModel */
+        $fakeModel = new $this->model();
+        $fakeModel->setKeyName($idKey);
+        $fakeModel->setTable(DB::raw("(" . $wrappedQuery->toSql() . ") AS " . $this->model->getTable()));
+        /** @var Builder $query */
+        $query = $fakeModel->newQuery()
+            // Ignore trashed filter in wrapper-query, original query already contains it if needed
+            ->withTrashed()
+            ->mergeBindings($wrappedQuery)
+            ->where($idKey, '>', $cursor->current);
+        $items = $query->take($cursor->pageSize)
+            ->get();
+        return new CursorResultAuto($cursor, $items);
+    }
+    
     /**
      * @param CursorRequest $cursor Requested cursor parameters
      * @param \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder $query
