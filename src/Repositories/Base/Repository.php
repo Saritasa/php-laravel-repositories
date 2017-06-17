@@ -168,26 +168,7 @@ class Repository implements IRepository
      */
     protected function toCursorResultWithCustomSort(CursorRequest $cursor, $originalQuery)
     {
-        $originalQuery->crossJoin(DB::raw('(SELECT @row := 1) as r'));
-        $idKey = CursorResultAuto::ROW_NUM_COLUMN;
-        $wrappedQuery = DB::table(
-            DB::raw("(SELECT *, (@row := @row+1) as {$idKey} FROM (" . $originalQuery->toSql() . ") as t1) as t2")
-        )->mergeBindings(($originalQuery instanceof Builder) ? $originalQuery : $originalQuery->getQuery());
-        /** @var Model $fakeModel */
-        $fakeModel = new $this->model();
-        $fakeModel->setKeyName($idKey);
-        $fakeModel->setTable(DB::raw("(" . $wrappedQuery->toSql() . ") AS " . $this->model->getTable()));
-        /** @var Builder $query */
-        $query = $fakeModel->newQuery()
-            // Ignore trashed filter in wrapper-query if model uses SoftDeletes, original query already contains it if needed
-            ->when(in_array(SoftDeletes::class, class_uses_recursive($fakeModel)), function ($query) {
-                return $query->withTrashed();
-            })
-            ->mergeBindings($wrappedQuery)
-            ->where($idKey, '>', $cursor->current);
-        $items = $query->take($cursor->pageSize)
-            ->get();
-        return new CursorResultAuto($cursor, $items);
+        return (new CursorQueryBuilder($cursor, $originalQuery))->getCursor();
     }
     
     /**

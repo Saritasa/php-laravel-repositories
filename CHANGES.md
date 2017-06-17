@@ -1,5 +1,9 @@
 # Changes History
 
+1.0.11
+------
+Make cursor pagination more versatile
+
 1.0.10
 -----
 Fix issue when model doesn't use SoftDeletes trait
