@@ -3,14 +3,13 @@
 namespace Saritasa\Repositories\Base;
 
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Query\Builder;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
+use Saritasa\DingoApi\Paging\CursorQueryBuilder;
 use Saritasa\DingoApi\Paging\CursorRequest;
 use Saritasa\DingoApi\Paging\CursorResult;
-use Saritasa\DingoApi\Paging\CursorResultAuto;
 use Saritasa\DingoApi\Paging\PagingInfo;
 use Saritasa\Exceptions\RepositoryException;
 
@@ -162,29 +161,29 @@ class Repository implements IRepository
 
     /**
      * Wrap the query to support cursor pagination with custom sort.
+     *
+     * @deprecated Now it's default implementation of toCursorResult.
+     *
      * @param CursorRequest $cursor Requested cursor parameters
-     * @param \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder $originalQuery
+     * @param Builder|QueryBuilder $query
      * @return CursorResult
      */
-    protected function toCursorResultWithCustomSort(CursorRequest $cursor, $originalQuery)
+    protected function toCursorResultWithCustomSort(CursorRequest $cursor, $query)
     {
-        return (new CursorQueryBuilder($cursor, $originalQuery))->getCursor();
+        return $this->toCursorResult($cursor, $query);
     }
     
     /**
      * @param CursorRequest $cursor Requested cursor parameters
-     * @param \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder $query
+     * @param Builder|QueryBuilder $query
      * @return CursorResult
      */
     protected function toCursorResult(CursorRequest $cursor, $query): CursorResult
     {
-        $idKey = $this->model->getQualifiedKeyName();
-        $items = $query->where($idKey, '>', $cursor->current)->take($cursor->pageSize)->get();
-
-        return new CursorResultAuto($cursor, $items);
+        return (new CursorQueryBuilder($cursor, $query))->getCursor();
     }
 
-    private function query(): \Illuminate\Database\Eloquent\Builder
+    private function query(): Builder
     {
         return $this->model->query();
     }

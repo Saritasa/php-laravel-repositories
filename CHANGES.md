@@ -1,5 +1,9 @@
 # Changes History
 
+1.0.12
+------
+Use CursorQueryBuilder (wrapper around original query) as default implementation for cursors
+
 1.0.11
 ------
 Make cursor pagination more versatile
