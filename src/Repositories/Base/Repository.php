@@ -126,7 +126,7 @@ class Repository implements IRepository
     function save(Model $model): Model
     {
         if (!$model->save()) {
-            throw new RepositoryException($this, "Cannot create $this->modelClass record");
+            throw new RepositoryException($this, "Cannot update $this->modelClass record");
         }
         return $model;
     }
