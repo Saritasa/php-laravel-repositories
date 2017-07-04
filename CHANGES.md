@@ -1,5 +1,9 @@
 # Changes History
 
+1.0.13
+------
+Require saritasa/laravel-controllers v2.0+
+
 1.0.12
 ------
 Use CursorQueryBuilder (wrapper around original query) as default implementation for cursors
