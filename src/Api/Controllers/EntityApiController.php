@@ -55,7 +55,6 @@ abstract class EntityApiController extends BaseApiController implements IApiReso
                 break;
             default:
                 $result = $this->repo->getWhere($searchValues);
-
         }
         return $this->json($result);
     }

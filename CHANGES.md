@@ -1,5 +1,8 @@
 # Changes History
 
+1.0.14
+Make Reposiotory query() method overridable (protected)
+
 1.0.13
 ------
 Require saritasa/laravel-controllers v2.0+

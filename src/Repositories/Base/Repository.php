@@ -50,8 +50,7 @@ class Repository implements IRepository
         } catch (\Exception $e) {
             throw new RepositoryException($this, "Error creating instance of model $this->modelClass", 500, $e);
         }
-        if (!is_a($this->model, Model::class, true))
-        {
+        if (!is_a($this->model, Model::class, true)) {
             throw new RepositoryException($this, "$this->modelClass must extend ".Model::class);
         }
     }
@@ -75,7 +74,7 @@ class Repository implements IRepository
         return $result;
     }
 
-    function getModelClass(): string
+    public function getModelClass(): string
     {
         return $this->modelClass;
     }
@@ -88,7 +87,7 @@ class Repository implements IRepository
         return $this->model->getVisible();
     }
 
-    function getModelValidationRules(Model $model = null): array
+    public function getModelValidationRules(Model $model = null): array
     {
         $model = $model ?: new $this->modelClass;
         if (method_exists($model, 'getValidationRules')) {
@@ -100,22 +99,22 @@ class Repository implements IRepository
         return [];
     }
 
-    function findOrFail($id): Model
+    public function findOrFail($id): Model
     {
         return $this->query()->findOrFail($id);
     }
 
-    function findOrNew($id): Model
+    public function findOrNew($id): Model
     {
         return $this->query()->findOrNew($id);
     }
 
-    function findWhere(array $fieldValues)//: Model
+    public function findWhere(array $fieldValues)//: Model
     {
         return $this->query()->where($fieldValues)->first();
     }
 
-    function create(Model $model): Model
+    public function create(Model $model): Model
     {
         if (!$model->save()) {
             throw new RepositoryException($this, "Cannot create $this->modelClass record");
@@ -123,7 +122,7 @@ class Repository implements IRepository
         return $model;
     }
 
-    function save(Model $model): Model
+    public function save(Model $model): Model
     {
         if (!$model->save()) {
             throw new RepositoryException($this, "Cannot update $this->modelClass record");
@@ -131,30 +130,30 @@ class Repository implements IRepository
         return $model;
     }
 
-    function delete(Model $model)
+    public function delete(Model $model)
     {
         if (!$model->delete()) {
             throw new RepositoryException($this, "Cannot delete $this->modelClass record");
         }
     }
 
-    function get(): Collection
+    public function get(): Collection
     {
         return $this->query()->get();
     }
 
-    function getWhere(array $fieldValues): Collection
+    public function getWhere(array $fieldValues): Collection
     {
         return $this->query()->where($fieldValues)->get();
     }
 
-    function getPage(PagingInfo $paging, array $fieldValues = null): LengthAwarePaginator
+    public function getPage(PagingInfo $paging, array $fieldValues = null): LengthAwarePaginator
     {
         $query = $this->query()->where($fieldValues);
         return $query->paginate($paging->pageSize, ['*'], 'page', $paging->page);
     }
 
-    function getCursorPage(CursorRequest $cursor, array $fieldValues = null): CursorResult
+    public function getCursorPage(CursorRequest $cursor, array $fieldValues = null): CursorResult
     {
         return $this->toCursorResult($cursor, $this->query()->where($fieldValues));
     }
@@ -183,7 +182,7 @@ class Repository implements IRepository
         return (new CursorQueryBuilder($cursor, $query))->getCursor();
     }
 
-    private function query(): Builder
+    protected function query(): Builder
     {
         return $this->model->query();
     }

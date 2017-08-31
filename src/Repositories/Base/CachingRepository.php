@@ -30,7 +30,7 @@ class CachingRepository implements IRepository
     /* @var string */
     private $modelClass;
 
-    function __construct(IRepository $repository, string $prefix, int $cacheTimeout = 10)
+    public function __construct(IRepository $repository, string $prefix, int $cacheTimeout = 10)
     {
         $this->repo = $repository;
         $this->prefix = $prefix;
@@ -48,12 +48,12 @@ class CachingRepository implements IRepository
         return $result;
     }
 
-    function getModelValidationRules(Model $model = null): array
+    public function getModelValidationRules(Model $model = null): array
     {
         return $this->repo->getModelValidationRules($model);
     }
 
-    function findOrFail($id): Model
+    public function findOrFail($id): Model
     {
         $result = $this->cachedFind($id);
         if (!$result) {
@@ -62,13 +62,13 @@ class CachingRepository implements IRepository
         return $result;
     }
 
-    function findOrNew($id): Model
+    public function findOrNew($id): Model
     {
         $result = $this->cachedFind($id);
         return $result ?: new $this->modelClass;
     }
 
-    function findWhere(array $fieldValues)//: Model
+    public function findWhere(array $fieldValues)//: Model
     {
         $key = $this->prefix.":find:".md5(serialize($fieldValues));
         return $this->cached($key, function () use ($fieldValues) {
@@ -76,32 +76,32 @@ class CachingRepository implements IRepository
         });
     }
 
-    function create(Model $model): Model
+    public function create(Model $model): Model
     {
         return $this->repo->create($model);
     }
 
-    function save(Model $model): Model
+    public function save(Model $model): Model
     {
         $result = $this->repo->save($model);
         $this->invalidate($model);
         return $result;
     }
 
-    function delete(Model $model)
+    public function delete(Model $model)
     {
         $this->repo->delete($model);
         $this->invalidate($model);
     }
 
-    function get(): Collection
+    public function get(): Collection
     {
         return $this->cached("$this->prefix:all", function () {
             return $this->repo->get();
         });
     }
 
-    function getWhere(array $fieldValues): Collection
+    public function getWhere(array $fieldValues): Collection
     {
         $key = $this->prefix.":get:".md5(serialize($fieldValues));
         return $this->cached($key, function () use ($fieldValues) {
@@ -109,7 +109,7 @@ class CachingRepository implements IRepository
         });
     }
 
-    function getPage(PagingInfo $paging, array $fieldValues = null): LengthAwarePaginator
+    public function getPage(PagingInfo $paging, array $fieldValues = null): LengthAwarePaginator
     {
         $key = $this->prefix.":page:".md5(serialize($paging->toArray()).serialize($fieldValues));
         return $this->cached($key, function () use ($paging, $fieldValues) {
@@ -117,7 +117,7 @@ class CachingRepository implements IRepository
         });
     }
 
-    function getCursorPage(CursorRequest $cursor, array $fieldValues = null): CursorResult
+    public function getCursorPage(CursorRequest $cursor, array $fieldValues = null): CursorResult
     {
         $key = $this->prefix.":page:".md5(serialize($cursor->toArray()).serialize($fieldValues));
         return $this->cached($key, function () use ($cursor, $fieldValues) {
@@ -141,7 +141,8 @@ class CachingRepository implements IRepository
         });
     }
 
-    private function invalidate(Model $model) {
+    private function invalidate(Model $model)
+    {
         $key = $this->prefix.":".$model->getKey();
         if (Cache::has($key)) {
             Cache::forget($key);
@@ -149,12 +150,12 @@ class CachingRepository implements IRepository
         Cache::forget("$this->prefix.:all");
     }
 
-    function getModelClass(): string
+    public function getModelClass(): string
     {
         return $this->modelClass;
     }
 
-    function __call($name, $arguments)
+    public function __call($name, $arguments)
     {
         if (0 === strpos($name, 'get')) {
             $argHash = md5(serialize($arguments));
@@ -166,7 +167,7 @@ class CachingRepository implements IRepository
         throw new RepositoryException($this, "Caching repository proxies only get* methods");
     }
 
-    function __get($name)
+    public function __get($name)
     {
         return $this->cached("$this->prefix:$name", function () use ($name) {
             return $this->repo->$name;
