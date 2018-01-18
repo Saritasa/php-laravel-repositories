@@ -1,5 +1,7 @@
 # Laravel Repositories
 
+[![Build Status](https://travis-ci.org/Saritasa/php-laravel-repositories.svg?branch=master)](https://travis-ci.org/Saritasa/php-laravel-repositories)
+
 Implementation of Repository pattern for Laravel (on top of Eloquent)
 
 ## Laravel 5.x
