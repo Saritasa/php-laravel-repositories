@@ -19,18 +19,21 @@ abstract class EntityApiController extends BaseApiController implements IApiReso
 
     /**
      * Repository, responsible for entities storage
+     *
      * @var IRepository
      */
     protected $repo;
 
     /**
      * Class name of entity, managed by this controller
+     *
      * @var string
      */
     protected $modelClass;
 
     /**
      * If lists output should be paginated by default
+     *
      * @var PagingType
      */
     protected $paging = PagingType::PAGINATOR;
@@ -64,7 +67,7 @@ abstract class EntityApiController extends BaseApiController implements IApiReso
      * - user does not request search by unsupported fields
      *
      * @throws ValidationException
-     * @param Request $request
+     * @param Request $request HTTP Request
      */
     protected function validateIndexRequest(Request $request)
     {
@@ -88,8 +91,10 @@ abstract class EntityApiController extends BaseApiController implements IApiReso
     }
 
     /**
+     * Validate input data, when user wants to create new model
+     *
      * @throws ValidationException
-     * @param Request $request
+     * @param Request $request HTTP Request
      */
     protected function validateCreateRequest(Request $request)
     {
@@ -98,9 +103,11 @@ abstract class EntityApiController extends BaseApiController implements IApiReso
     }
 
     /**
+     * Validate request and model (ex. check security), user requests to show it
+     *
      * @throws ValidationException
-     * @param Request $request
-     * @param Model $model
+     * @param Request $request HTTP Request
+     * @param Model $model Model instance to be validated
      */
     protected function validateShowRequest(Request $request, Model $model)
     {
@@ -114,9 +121,11 @@ abstract class EntityApiController extends BaseApiController implements IApiReso
     }
 
     /**
+     * Validate data, when model update is requested
+     *
      * @throws ValidationException
-     * @param Request $request
-     * @param Model $model
+     * @param Request $request HTTP Request
+     * @param Model $model Model instance to be validated
      * @return Model
      */
     protected function validateUpdateRequest(Request $request, Model $model)
@@ -140,9 +149,11 @@ abstract class EntityApiController extends BaseApiController implements IApiReso
     }
 
     /**
+     * Validate request to delete model (ex. check permissions)
+     *
      * @throws ValidationException
-     * @param Request $request
-     * @param Model $model
+     * @param Request $request HTTP Request
+     * @param Model $model Model to be deleted
      */
     protected function validateDestroyRequest(Request $request, Model $model)
     {

@@ -37,7 +37,11 @@ class Repository implements IRepository
      */
     protected $searchableFields = [];
 
-    /** @var Model */
+    /**
+     * Sample instance of model type, handled by this repository
+     *
+     * @var Model
+     */
     private $model;
 
     public function __construct()
@@ -164,7 +168,7 @@ class Repository implements IRepository
      * @deprecated Now it's default implementation of toCursorResult.
      *
      * @param CursorRequest $cursor Requested cursor parameters
-     * @param Builder|QueryBuilder $query
+     * @param Builder|QueryBuilder $query Query builder
      * @return CursorResult
      */
     protected function toCursorResultWithCustomSort(CursorRequest $cursor, $query)
@@ -173,8 +177,10 @@ class Repository implements IRepository
     }
     
     /**
+     * Execute query and return page, corresponding to cursor request
+     *
      * @param CursorRequest $cursor Requested cursor parameters
-     * @param Builder|QueryBuilder $query
+     * @param Builder|QueryBuilder $query Query builder
      * @return CursorResult
      */
     protected function toCursorResult(CursorRequest $cursor, $query): CursorResult

@@ -15,14 +15,20 @@ use Saritasa\DingoApi\Paging\PagingInfo;
 class CachingRepository implements IRepository
 {
     /**
+     * Wrapped repository, which gets actual data to be cached
+     *
      * @var IRepository
      */
     private $repo;
     /**
+     * Prefix for values, cached by this repository in cache storage
+     *
      * @var string
      */
     private $prefix;
     /**
+     * Cache timeout
+     *
      * @var int
      */
     private $cacheTimeout;

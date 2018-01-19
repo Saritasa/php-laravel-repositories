@@ -1,5 +1,9 @@
 # Changes History
 
+1.0.15
+------
+Explicitly add [saritasa/dingo-api-custom](https://github.com/Saritasa/php-dingo-api-custom) as dependency
+
 1.0.14
 -----
 Make Reposiotory query() method overridable (protected)
