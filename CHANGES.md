@@ -1,12 +1,16 @@
 # Changes History
 
+1.0.16
+------
+Add support for repositories to join tables by relation name
+
 1.0.15
 ------
 Explicitly add [saritasa/dingo-api-custom](https://github.com/Saritasa/php-dingo-api-custom) as dependency
 
 1.0.14
 -----
-Make Reposiotory query() method overridable (protected)
+Make Repository query() method overridable (protected)
 
 1.0.13
 ------
@@ -42,7 +46,7 @@ Improved cursor pagination
 
 1.0.5
 -----
-- Weeker typing requiredments for paging
+- Weaker typing requirements for paging
 - Remove clones of BaseApiController
 - Implement cursor pagination as in Fractal samples
 
