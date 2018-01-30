@@ -5,12 +5,20 @@ namespace Saritasa\Repositories\Base;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\RelationNotFoundException;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Collection;
 use Saritasa\DingoApi\Paging\CursorQueryBuilder;
 use Saritasa\DingoApi\Paging\CursorRequest;
 use Saritasa\DingoApi\Paging\CursorResult;
 use Saritasa\DingoApi\Paging\PagingInfo;
+use Saritasa\Exceptions\NotImplementedException;
 use Saritasa\Exceptions\RepositoryException;
 
 /**
@@ -191,5 +199,90 @@ class Repository implements IRepository
     protected function query(): Builder
     {
         return $this->model->query();
+    }
+
+    /**
+     * Join eager loaded relation and get the related column name.
+     *
+     * @param Builder|\Illuminate\Database\Query\Builder $query Query builder that should be appended with join clause
+     * @param string|array $relations Relation name or array with relations names that should be joined
+     *
+     * @return Builder|\Illuminate\Database\Query\Builder
+     * @throws NotImplementedException
+     */
+    protected function joinRelation($query, $relations)
+    {
+        $joinedRelations = is_string($relations) ? [$relations] : $relations;
+
+        foreach ($joinedRelations as $relationToJoin) {
+            $nestedQuery = $query;
+            foreach (explode('.', $relationToJoin) as $relationName) {
+                $model = $nestedQuery->getModel();
+                if (!method_exists($model, $relationName)) {
+                    throw RelationNotFoundException::make($model, $relationName);
+                }
+
+                $relation = $model->$relationName();
+                switch (true) {
+                    case $relation instanceof BelongsToMany && !$relation instanceof MorphToMany:
+                        $pivot = $relation->getTable();
+                        $pivotPK = $relation->getExistenceCompareKey();
+                        $pivotFK = $relation->getQualifiedParentKeyName();
+                        $this->performJoin($query, $pivot, $pivotPK, $pivotFK);
+
+                        $related = $relation->getRelated();
+                        $table = $related->getTable();
+                        $tablePK = $related->getForeignKey();
+                        $foreign = $pivot . '.' . $tablePK;
+                        $other = $related->getQualifiedKeyName();
+
+                        $this->performJoin($query, $table, $foreign, $other);
+                        break;
+                    case $relation instanceof HasOne || $relation instanceof HasMany:
+                        $table = $relation->getRelated()->getTable();
+                        $foreign = $relation->getQualifiedForeignKeyName();
+                        $other = $relation->getQualifiedParentKeyName();
+                        break;
+                    case $relation instanceof BelongsTo && !$relation instanceof MorphTo:
+                        $table = $relation->getRelated()->getTable();
+                        $foreign = $relation->getQualifiedForeignKey();
+                        $other = $relation->getQualifiedOwnerKeyName();
+                        break;
+                    default:
+                        $requestedRelation = get_class($relation);
+                        throw new NotImplementedException("Relation class [{$requestedRelation}] are not supported");
+                }
+
+                $query = $this->performJoin($query, $table, $foreign, $other);
+                $nestedQuery = $relation->getQuery();
+            }
+        }
+
+        return $query;
+    }
+
+    /**
+     * Perform join query.
+     *
+     * @param Builder|\Illuminate\Database\Query\Builder $query Query builder to apply joins
+     * @param string $table Joined table
+     * @param string $foreign Foreign key
+     * @param string $other Other table key
+     *
+     * @return Builder|\Illuminate\Database\Query\Builder
+     */
+    private function performJoin($query, $table, $foreign, $other)
+    {
+        // Check that table not joined yet
+        $joins = [];
+        foreach ((array) $query->getQuery()->joins as $key => $join) {
+            $joins[] = $join->table;
+        }
+
+        if (! in_array($table, $joins)) {
+            $query->leftJoin($table, $foreign, '=', $other);
+        }
+
+        return $query;
     }
 }

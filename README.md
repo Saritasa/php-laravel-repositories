@@ -17,6 +17,38 @@ $ composer require saritasa/laravel-repositories
 ### IRepository
 Interface, declaring common methods
 
+### Repository
+Repository class implements **IRepository** interface. Contains helper methods to build query for SQL-like storages.
+Has protected method to join tables by Eloquent model relation name.
+Supported relations are: **BelongsToMany**, **HasOne**, **HasMany**, **BelongsTo**
+Nested relations supported.
+
+**Example**
+
+For method
+
+```php
+public function getUsersList(): Collection
+{
+    $query = $this->query();
+
+    $this->joinRelation($query, ['role', 'profile', 'cars', 'profile.phones']);
+
+    return $query;
+}
+```
+
+result query will be
+
+```SQL
+SELECT *
+FROM "users"
+  LEFT JOIN "roles" ON "users"."role_id" = "roles"."id"
+  LEFT JOIN "profiles" ON "profiles"."user_id" = "users"."id"
+  LEFT JOIN "cars" ON "cars"."user_id" = "users"."id"
+  LEFT JOIN "phones" ON "phones"."profile_id" = "profiles"."id"
+```
+
 ## Exceptions
 ### Repository Exception
 Should be thrown by class, implementing IRepository, if there is no more suitable exception defined.
