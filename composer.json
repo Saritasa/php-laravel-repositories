@@ -16,6 +16,7 @@
         "illuminate/database": "5.*",
         "league/fractal": "^0.16",
         "saritasa/dingo-api-custom": "^1.0",
+        "saritasa/php-common": "^1.0",
         "saritasa/laravel-controllers": "^2.0"
     },
     "require-dev": {
