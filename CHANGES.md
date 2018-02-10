@@ -1,5 +1,9 @@
 # Changes History
 
+1.0.17
+------
+Add EloquentRepository with extended method **getWith()** to retrieve list of items 
+
 1.0.16
 ------
 Add support for repositories to join tables by relation name
