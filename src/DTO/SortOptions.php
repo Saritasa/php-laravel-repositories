@@ -13,10 +13,10 @@ class SortOptions extends DtoModel
     /**
      * Create SortOptionsData model.
      *
-     * @param string|null $orderBy Field name to sort records by
-     * @param string|null $sortOrder Sort order direction (asc, desc)
+     * @param string $orderBy Field name to sort records by
+     * @param string $sortOrder Sort order direction (asc, desc)
      */
-    public function __construct(string $orderBy = null, ?string $sortOrder = OrderDirections::ASC)
+    public function __construct(string $orderBy, string $sortOrder = OrderDirections::ASC)
     {
         parent::__construct([
             'orderBy' => $orderBy,

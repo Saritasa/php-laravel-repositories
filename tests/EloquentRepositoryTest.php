@@ -43,7 +43,7 @@ class EloquentRepositoryTest extends TestCase
             ['age', '>', 21],
         ];
         $expectedSql = CompanyTestModel::query()->where($whereConditions)->toSql();
-        $actualSql = $this->repository->getWithQueryString(null, null, $whereConditions);
+        $actualSql = $this->repository->getWithQueryString([], [], $whereConditions);
 
         $this->assertEquals($expectedSql, $actualSql);
     }
@@ -58,7 +58,7 @@ class EloquentRepositoryTest extends TestCase
         $sortOptions = new SortOptions('name', OrderDirections::DESC);
 
         $expectedSql = CompanyTestModel::query()->orderBy($sortOptions->orderBy, $sortOptions->sortOrder)->toSql();
-        $actualSql = $this->repository->getWithQueryString(null, null, null, $sortOptions);
+        $actualSql = $this->repository->getWithQueryString([], [], [], $sortOptions);
 
         $this->assertEquals($expectedSql, $actualSql);
     }
@@ -86,7 +86,7 @@ class EloquentRepositoryTest extends TestCase
     {
         $eagerLoadedRelationsCounts =  ['persons'];
         $expectedSql = CompanyTestModel::query()->withCount($eagerLoadedRelationsCounts)->toSql();
-        $actualSql = $this->repository->getWithQueryString(null, $eagerLoadedRelationsCounts);
+        $actualSql = $this->repository->getWithQueryString([], $eagerLoadedRelationsCounts);
 
         $this->assertEquals($actualSql, $expectedSql);
     }
@@ -143,18 +143,18 @@ class EloquentEntitiesRepository extends EloquentRepository
     /**
      * Returns built SQL string for requested rules.
      *
-     * @param array|null $with Which relations should be preloaded
-     * @param array|null $withCounts Which related entities should be counted
-     * @param array|null $where Conditions that retrieved entities should satisfy
-     * @param null|SortOptions $sortOptions How list of item should be sorted
+     * @param array $with Which relations should be preloaded
+     * @param array $withCounts Which related entities should be counted
+     * @param array $where Conditions that retrieved entities should satisfy
+     * @param SortOptions $sortOptions How list of item should be sorted
      *
      * @return string
      */
     public function getWithQueryString(
-        ?array $with,
-        ?array $withCounts = null,
-        ?array $where = null,
-        ?SortOptions $sortOptions = null
+        array $with,
+        array $withCounts = null,
+        array $where = null,
+        SortOptions $sortOptions = null
     ): string {
         return $this->getWithBuilder($with, $withCounts, $where, $sortOptions)->toSql();
     }
@@ -170,10 +170,10 @@ class EloquentEntitiesRepository extends EloquentRepository
      * @return Builder
      */
     public function getWithQueryBuilder(
-        ?array $with,
-        ?array $withCounts = null,
-        ?array $where = null,
-        ?SortOptions $sortOptions = null
+        array $with,
+        array $withCounts = null,
+        array $where = null,
+        SortOptions $sortOptions = null
     ): Builder {
         return $this->getWithBuilder($with, $withCounts, $where, $sortOptions);
     }

@@ -14,17 +14,17 @@ interface IEloquentRepository extends IRepository
     /**
      * Retrieve list of entities that satisfied $where conditions.
      *
-     * @param array|null $with Which relations should be preloaded
-     * @param array|null $withCounts Which related entities should be counted
-     * @param array|null $where Conditions that retrieved entities should satisfy
-     * @param null|SortOptions $sortOptions How list of item should be sorted
+     * @param array $with Which relations should be preloaded
+     * @param array $withCounts Which related entities should be counted
+     * @param array $where Conditions that retrieved entities should satisfy
+     * @param SortOptions $sortOptions How list of item should be sorted
      *
      * @return Collection
      */
     public function getWith(
-        ?array $with,
-        ?array $withCounts = null,
-        ?array $where = null,
-        ?SortOptions $sortOptions = null
+        array $with,
+        array $withCounts = null,
+        array $where = null,
+        SortOptions $sortOptions = null
     ): Collection;
 }
