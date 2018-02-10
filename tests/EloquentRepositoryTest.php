@@ -11,7 +11,7 @@ use Saritasa\DTO\SortOptions;
 use Saritasa\Enums\OrderDirections;
 
 /**
- * Check string rules
+ * Check Eloquent repository.
  */
 class EloquentRepositoryTest extends TestCase
 {
