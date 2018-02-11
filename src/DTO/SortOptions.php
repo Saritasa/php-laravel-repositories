@@ -11,6 +11,16 @@ use Saritasa\Transformers\DtoModel;
 class SortOptions extends DtoModel
 {
     /**
+     * Order by attribute name.
+     */
+    const ORDER_BY = 'orderBy';
+
+    /**
+     * Sort order attribute name;
+     */
+    const SORT_ORDER = 'sortOrder';
+
+    /**
      * Create SortOptionsData model.
      *
      * @param string $orderBy Field name to sort records by
@@ -19,8 +29,8 @@ class SortOptions extends DtoModel
     public function __construct(string $orderBy, string $sortOrder = OrderDirections::ASC)
     {
         parent::__construct([
-            'orderBy' => $orderBy,
-            'sortOrder' => (string)new OrderDirections($sortOrder),
+            static::ORDER_BY => $orderBy,
+            static::SORT_ORDER => (string)new OrderDirections($sortOrder),
         ]);
     }
 
