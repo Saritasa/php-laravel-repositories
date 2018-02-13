@@ -16,6 +16,8 @@ Install the ```saritasa/laravel-repositories``` package:
 $ composer require saritasa/laravel-repositories
 ```
 
+*Note:* For Laravel 5.4 use 1.* versions, for Laravel 5.5+ use 2.*
+
 ## Available classes
 
 ### IRepository

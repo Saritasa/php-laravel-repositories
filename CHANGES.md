@@ -1,8 +1,17 @@
 # Changes History
 
-1.0.17
+2.1.0
 ------
 Add EloquentRepository with extended method **getWith()** to retrieve list of items 
+
+2.0.1
+-----
+Resolve composer dependencies conflicts:
+do not require specific versions of transitive dependencies
+
+2.0.0
+-----
+Switched to Dingo/Api 2.0. Use this version with Laravel 5.5+
 
 1.0.16
 ------

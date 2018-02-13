@@ -14,9 +14,7 @@
         "php": ">=7.0",
         "illuminate/support": "5.*",
         "illuminate/database": "5.*",
-        "league/fractal": "^0.16",
-        "saritasa/dingo-api-custom": "^1.0",
-        "saritasa/php-common": "^1.0",
+        "saritasa/dingo-api-custom": "^2.0",
         "saritasa/laravel-controllers": "^2.0"
     },
     "require-dev": {
@@ -24,7 +22,7 @@
         "squizlabs/php_codesniffer": "^3.0"
     },
     "prefer-stable" : true,
-    "minimum-stability": "beta",
+    "minimum-stability": "alpha",
     "autoload": {
         "psr-4" : {
             "Saritasa\\": "src/"
@@ -36,7 +34,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "1.0.x-dev"
+            "dev-master": "2.0.x-dev"
         }
     }
 }
