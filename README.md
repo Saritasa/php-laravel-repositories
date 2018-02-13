@@ -55,7 +55,7 @@ FROM "users"
   LEFT JOIN "phones" ON "phones"."profile_id" = "profiles"."id"
 ```
 
-###IEloquentRepository, EloquentRepository
+### IEloquentRepository, EloquentRepository
 In addition to **Repository** has **getWith()** method that allows to retrieve list of entities with 
 eager loaded related models and related models counts. Also allows to filter this list by given criteria 
 and sort in requested order.
@@ -66,10 +66,10 @@ $usersRepository->getWith(['role', 'supervisors'], ['phones'], [['age', '>', 21]
 
 // Retrieves list of users which age greater than 21. 
 // Each user will be retrieved with pre-loaded role and supervisors models.
-// List of users will be ordered by requested sort options (**SortOptions** class object)
+// List of users will be ordered by requested sort options (SortOptions::class object)
 ```
 
-###SortOptions
+### SortOptions
 DTO that allows to pass sort options to repository. Contains sort order field 
 and sort order direction that should be one of **OrderDirections** enum value.
 
