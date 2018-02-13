@@ -1,5 +1,10 @@
 # Changes History
 
+2.0.1
+-----
+Resolve composer dependencies conflicts:
+do not require specific versions of transitive dependencies
+
 2.0.0
 -----
 Switched to Dingo/Api 2.0. Use this version with Laravel 5.5+
