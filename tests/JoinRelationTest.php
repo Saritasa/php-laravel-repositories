@@ -15,7 +15,7 @@ use PHPUnit\Framework\TestCase;
 use Saritasa\Exceptions\NotImplementedException;
 
 /**
- * Check string rules
+ * Check join relation repository method.
  */
 class JoinRelationTest extends TestCase
 {

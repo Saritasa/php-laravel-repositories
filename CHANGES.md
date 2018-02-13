@@ -1,5 +1,9 @@
 # Changes History
 
+2.1.0
+------
+Add EloquentRepository with extended method **getWith()** to retrieve list of items 
+
 2.0.1
 -----
 Resolve composer dependencies conflicts:
