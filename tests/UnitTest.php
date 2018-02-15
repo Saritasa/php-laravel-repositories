@@ -1,6 +1,6 @@
 <?php
 
-namespace Saritasa\Repositories\Base;
+namespace Saritasa\Repositories\Tests;
 
 use PHPUnit\Framework\TestCase;
 

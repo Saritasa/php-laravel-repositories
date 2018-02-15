@@ -1,6 +1,6 @@
 <?php
 
-namespace Saritasa\Repositories\Base;
+namespace Saritasa\Repositories\Tests;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\RelationNotFoundException;
@@ -13,6 +13,7 @@ use Illuminate\Database\SQLiteConnection;
 use PDO;
 use PHPUnit\Framework\TestCase;
 use Saritasa\Exceptions\NotImplementedException;
+use Saritasa\Repositories\Base\Repository;
 
 /**
  * Check join relation repository method.

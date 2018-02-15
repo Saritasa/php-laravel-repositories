@@ -1,6 +1,6 @@
 <?php
 
-namespace Saritasa\Repositories\Base;
+namespace Saritasa\Repositories\Tests;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -9,6 +9,7 @@ use PDO;
 use PHPUnit\Framework\TestCase;
 use Saritasa\DTO\SortOptions;
 use Saritasa\Enums\OrderDirections;
+use Saritasa\Repositories\Base\EloquentRepository;
 
 /**
  * Check Eloquent repository.
@@ -22,8 +23,6 @@ class EloquentRepositoryTest extends TestCase
      * @param string|null $name
      * @param array $data
      * @param string $dataName
-     *
-     * @throws \Saritasa\Exceptions\RepositoryException
      */
     public function __construct(string $name = null, array $data = [], string $dataName = '')
     {

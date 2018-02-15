@@ -28,6 +28,11 @@
             "Saritasa\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4" : {
+            "Saritasa\\Repositories\\Tests\\": "src/"
+        }
+    },
     "config": {
         "preferred-install": "dist",
         "sort-packages": true
