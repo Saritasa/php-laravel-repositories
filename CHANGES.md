@@ -1,5 +1,10 @@
 # Changes History
 
+2.1.1
+------
+Change catching type in Repository constructor from \Exception to \Throwable
+Add description to Repository constructor
+
 2.1.0
 ------
 Add EloquentRepository with extended method **getWith()** to retrieve list of items 
