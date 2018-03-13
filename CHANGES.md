@@ -1,19 +1,13 @@
 # Changes History
 
-2.1.3
-------
-Add Mocker helper yo use db connections mocks instead sqlite:memory.
-Add mockery/mockery in composer dependencies.
-Add base repository test.
-
-2.1.2
-------
-Update accepted exception type in RepositoryException from \Exception to \Throwable.
-
 2.1.1
 ------
 Change catching type in Repository constructor from \Exception to \Throwable
 Add description to Repository constructor
+Update accepted exception type in RepositoryException from \Exception to \Throwable.
+Add Mocker helper yo use db connections mocks instead sqlite:memory.
+Add mockery/mockery in composer dependencies.
+Add base repository test.
 
 2.1.0
 ------
