@@ -3,7 +3,7 @@
 namespace Saritasa\Exceptions;
 
 use Saritasa\Repositories\Base\IRepository;
-use Exception;
+use Throwable;
 
 /**
  * This exception must be thrown by repository, if no other exception class,
@@ -11,7 +11,7 @@ use Exception;
  */
 class RepositoryException extends \Exception
 {
-    public function __construct(IRepository $repository, $message = "", $code = 500, Exception $previous = null)
+    public function __construct(IRepository $repository, $message = "", $code = 500, Throwable $previous = null)
     {
         $repoClass = get_class($repository);
 

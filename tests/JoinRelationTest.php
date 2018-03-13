@@ -9,8 +9,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
-use Illuminate\Database\SQLiteConnection;
-use PDO;
 use PHPUnit\Framework\TestCase;
 use Saritasa\Exceptions\NotImplementedException;
 use Saritasa\Repositories\Base\Repository;
@@ -24,6 +22,8 @@ class JoinRelationTest extends TestCase
     private $repository;
 
     /**
+     * Check join relation repository method.
+     *
      * @param string|null $name
      * @param array $data
      * @param string $dataName
@@ -34,6 +34,13 @@ class JoinRelationTest extends TestCase
     {
         parent::__construct($name, $data, $dataName);
         $this->repository = new EntitiesRepository();
+    }
+
+    public function setUp()
+    {
+        parent::setUp();
+        $resolver = Mocker::mockConnectionResolver();
+        Model::setConnectionResolver($resolver);
     }
 
     /**
@@ -165,22 +172,9 @@ class JoinRelationTest extends TestCase
 }
 
 /**
- * Model class with fake connection generation.
- */
-class InMemoryModel extends Model
-{
-    public function getConnection()
-    {
-        $pdo = new PDO('sqlite::memory:');
-
-        return new SQLiteConnection($pdo);
-    }
-}
-
-/**
  * Fake user model class. Used to build test repository and perform tests on this model.
  */
-class User extends InMemoryModel
+class User extends Model
 {
     public function role(): BelongsTo
     {
@@ -211,21 +205,21 @@ class User extends InMemoryModel
 /**
  * User role model.
  */
-class Role extends InMemoryModel
+class Role extends Model
 {
 }
 
 /**
  * Car that can be owned by user.
  */
-class Car extends InMemoryModel
+class Car extends Model
 {
 }
 
 /**
  * User personal information profile.
  */
-class Profile extends InMemoryModel
+class Profile extends Model
 {
     public function phones(): HasMany
     {
@@ -236,21 +230,21 @@ class Profile extends InMemoryModel
 /**
  * Supervisors that can supervise users.
  */
-class Supervisor extends InMemoryModel
+class Supervisor extends Model
 {
 }
 
 /**
  * Phone records that profile can contain.
  */
-class Phone extends InMemoryModel
+class Phone extends Model
 {
 }
 
 /**
  * Text note that can be applied for any model.
  */
-class Note extends InMemoryModel
+class Note extends Model
 {
 }
 

@@ -4,8 +4,6 @@ namespace Saritasa\Repositories\Tests;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\SQLiteConnection;
-use PDO;
 use PHPUnit\Framework\TestCase;
 use Saritasa\DTO\SortOptions;
 use Saritasa\Enums\OrderDirections;
@@ -16,10 +14,13 @@ use Saritasa\Repositories\Base\EloquentRepository;
  */
 class EloquentRepositoryTest extends TestCase
 {
+
     /** @var EloquentEntitiesRepository */
     private $repository;
 
     /**
+     * Check Eloquent repository.
+     *
      * @param string|null $name
      * @param array $data
      * @param string $dataName
@@ -28,6 +29,13 @@ class EloquentRepositoryTest extends TestCase
     {
         parent::__construct($name, $data, $dataName);
         $this->repository = new EloquentEntitiesRepository();
+    }
+
+    public function setUp()
+    {
+        parent::setUp();
+        $resolver = Mocker::mockConnectionResolver();
+        Model::setConnectionResolver($resolver);
     }
 
     /**
@@ -69,7 +77,7 @@ class EloquentRepositoryTest extends TestCase
      */
     public function testGetWithEagerLoad()
     {
-        $eagerLoadedRelations =  ['role','cars'];
+        $eagerLoadedRelations = ['role', 'cars'];
         $expectedBuilder = CompanyTestModel::query()->with($eagerLoadedRelations);
         $actualBuilder = $this->repository->getWithQueryBuilder($eagerLoadedRelations);
 
@@ -83,7 +91,7 @@ class EloquentRepositoryTest extends TestCase
      */
     public function testGetWithCounts()
     {
-        $eagerLoadedRelationsCounts =  ['persons'];
+        $eagerLoadedRelationsCounts = ['persons'];
         $expectedSql = CompanyTestModel::query()->withCount($eagerLoadedRelationsCounts)->toSql();
         $actualSql = $this->repository->getWithQueryString([], $eagerLoadedRelationsCounts);
 
@@ -92,28 +100,9 @@ class EloquentRepositoryTest extends TestCase
 }
 
 /**
- * Fake model to perform test in memory database.
- * Has mock methods to retrieve connection.
- */
-class InMemoryTestModel extends Model
-{
-    /**
-     * Returns test connection to in memory database.
-     *
-     * @return SQLiteConnection
-     */
-    public function getConnection()
-    {
-        $pdo = new PDO('sqlite::memory:');
-
-        return new SQLiteConnection($pdo);
-    }
-}
-
-/**
  * Fake user model class. Used to build test repository and perform tests on this model.
  */
-class CompanyTestModel extends InMemoryTestModel
+class CompanyTestModel extends Model
 {
     protected $table = 'companies';
 
@@ -126,7 +115,7 @@ class CompanyTestModel extends InMemoryTestModel
 /**
  * Fake user model class. Used to build test repository and perform tests on this model.
  */
-class PersonsTestModel extends InMemoryTestModel
+class PersonsTestModel extends Model
 {
     protected $table = 'persons';
 }

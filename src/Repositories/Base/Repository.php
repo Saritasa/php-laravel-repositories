@@ -52,6 +52,12 @@ class Repository implements IRepository
      */
     private $model;
 
+    /**
+     * Superclass for any repository.
+     * Contains logic of receipt the entity list, with filters (search) and sort.
+     *
+     * @throws RepositoryException
+     */
     public function __construct()
     {
         if (!$this->modelClass) {
@@ -59,7 +65,7 @@ class Repository implements IRepository
         }
         try {
             $this->model = new $this->modelClass;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             throw new RepositoryException($this, "Error creating instance of model $this->modelClass", 500, $e);
         }
         if (!is_a($this->model, Model::class, true)) {
