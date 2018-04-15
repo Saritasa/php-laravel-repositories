@@ -2,7 +2,7 @@
 
 namespace Saritasa\Exceptions;
 
-use Saritasa\Repositories\Base\IRepository;
+use Saritasa\Contracts\IRepository;
 use Throwable;
 
 /**
@@ -15,6 +15,6 @@ class RepositoryException extends \Exception
     {
         $repoClass = get_class($repository);
 
-        parent::__construct($repoClass.': '.$message, $code, $previous);
+        parent::__construct("$repoClass: $message", $code, $previous);
     }
 }

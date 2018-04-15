@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use PHPUnit\Framework\TestCase;
 use Saritasa\Exceptions\NotImplementedException;
-use Saritasa\Repositories\Base\Repository;
+use Saritasa\Repositories\EloquentRepository;
 
 /**
  * Check join relation repository method.
@@ -251,9 +251,15 @@ class Note extends Model
 /**
  * Fake user records repository class. Has debug methods for performing tests.
  */
-class EntitiesRepository extends Repository
+class EntitiesRepository extends EloquentRepository
 {
-    protected $modelClass = User::class;
+    /**
+     * Fake user records repository class. Has debug methods for performing tests.
+     */
+    public function __construct()
+    {
+        parent::__construct(User::class);
+    }
 
     /**
      * Base query string. Used for testing SQL string retrieving.

@@ -7,7 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 use PHPUnit\Framework\TestCase;
 use Saritasa\DTO\SortOptions;
 use Saritasa\Enums\OrderDirections;
-use Saritasa\Repositories\Base\EloquentRepository;
+use Saritasa\Exceptions\RepositoryException;
+use Saritasa\Repositories\EloquentRepository;
 
 /**
  * Check Eloquent repository.
@@ -36,6 +37,15 @@ class EloquentRepositoryTest extends TestCase
         parent::setUp();
         $resolver = Mocker::mockConnectionResolver();
         Model::setConnectionResolver($resolver);
+    }
+
+    /**
+     * Checks that exception will thrown when model class is not exists or invalid.
+     */
+    public function testCreationWhenModelClassInvalid()
+    {
+        $this->expectException(RepositoryException::class);
+        new EloquentRepository('class');
     }
 
     /**
@@ -126,7 +136,11 @@ class PersonsTestModel extends Model
  */
 class EloquentEntitiesRepository extends EloquentRepository
 {
-    protected $modelClass = CompanyTestModel::class;
+
+    public function __construct()
+    {
+        parent::__construct(CompanyTestModel::class);
+    }
 
     /**
      * Returns built SQL string for requested rules.
