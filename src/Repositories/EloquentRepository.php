@@ -180,7 +180,12 @@ class EloquentRepository implements IRepository
      */
     public function delete(Model $model): void
     {
-        if (!$model->delete()) {
+        try {
+            $result = $model->delete();
+        } catch (\Throwable $exception) {
+            throw new RepositoryException($this, "Cannot delete $this->modelClass record", 500, $exception);
+        }
+        if (!$result) {
             throw new RepositoryException($this, "Cannot delete $this->modelClass record");
         }
     }
