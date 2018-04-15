@@ -3,7 +3,7 @@
 namespace Saritasa;
 
 use Illuminate\Support\ServiceProvider;
-use Saritasa\Repositories\Eloquent\EloquentRepositoryFactory;
+use Saritasa\Repositories\EloquentRepositoryFactory;
 use Saritasa\Contracts\IRepositoryFactory;
 
 class RepositoryServiceProvider extends ServiceProvider
