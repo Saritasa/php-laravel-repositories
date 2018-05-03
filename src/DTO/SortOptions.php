@@ -1,9 +1,9 @@
 <?php
 
-namespace Saritasa\DTO;
+namespace Saritasa\LaravelRepositories\DTO;
 
 use Saritasa\Dto;
-use Saritasa\Enums\OrderDirections;
+use Saritasa\LaravelRepositories\Enums\OrderDirections;
 use Saritasa\Exceptions\InvalidEnumValueException;
 
 /**

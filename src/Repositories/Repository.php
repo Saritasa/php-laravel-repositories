@@ -1,6 +1,6 @@
 <?php
 
-namespace Saritasa\Repositories;
+namespace Saritasa\LaravelRepositories\Repositories;
 
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -17,24 +17,21 @@ use Saritasa\DingoApi\Paging\CursorQueryBuilder;
 use Saritasa\DingoApi\Paging\CursorRequest;
 use Saritasa\DingoApi\Paging\CursorResult;
 use Saritasa\DingoApi\Paging\PagingInfo;
-use Saritasa\DTO\SortOptions;
-use Saritasa\Exceptions\ModelNotFoundException;
+use Saritasa\LaravelRepositories\DTO\SortOptions;
+use Saritasa\LaravelRepositories\Exceptions\ModelNotFoundException;
 use Saritasa\Exceptions\NotImplementedException;
-use Saritasa\Exceptions\RepositoryException;
+use Saritasa\LaravelRepositories\Exceptions\RepositoryException;
 use Illuminate\Database\Query\Builder as QueryBuilder;
-use Saritasa\Contracts\IRepository;
+use Saritasa\LaravelRepositories\Contracts\IRepository;
 use Illuminate\Database\Eloquent\ModelNotFoundException as EloquentModelNotFountException;
 
 /**
  * Eloquent model repository. Manages stored entities.
- * In addition to base repository allows to retrieve list of entities by passed rules with requested related data.
  */
-class EloquentRepository implements IRepository
+class Repository implements IRepository
 {
     /**
      * FQN model name of the repository. Must be determined in the inheritors.
-     *
-     * Note: PHP 7 allows to use "SomeModel::class" just as property initial value. Use it.
      *
      * @var string
      */
@@ -60,12 +57,13 @@ class EloquentRepository implements IRepository
      * Superclass for any repository.
      * Contains logic of receipt the entity list, with filters (search) and sort.
      *
-     * @param string $modelClass
+     * @param string $modelClass Model class for this repository
+     *
      * @throws RepositoryException
      */
     public function __construct(string $modelClass)
     {
-       $this->modelClass = $modelClass;
+        $this->modelClass = $modelClass;
         try {
             $this->model = new $this->modelClass;
         } catch (\Throwable $e) {
@@ -84,9 +82,11 @@ class EloquentRepository implements IRepository
     }
 
     /**
+     * Return models visible fields.
+     *
      * @return array
      */
-    public function getVisibleFields()
+    public function getVisibleFields(): array
     {
         return $this->model->getVisible();
     }
@@ -110,7 +110,7 @@ class EloquentRepository implements IRepository
     /**
      * Find model by their id.
      *
-     * @param string|int $id
+     * @param string|int $id Id to find model
      *
      * @return Model
      *
@@ -122,7 +122,7 @@ class EloquentRepository implements IRepository
             $model = $this->query()->findOrFail($id);
             return $model;
         } catch (EloquentModelNotFountException $exception) {
-            throw new ModelNotFoundException($this, [$id], $exception);
+            throw new ModelNotFoundException($this, $id, $exception);
         }
     }
 
@@ -216,11 +216,11 @@ class EloquentRepository implements IRepository
      * Get models collection as pagination.
      *
      * @param PagingInfo $paging Paging information
-     * @param array|null $fieldValues Filters collection
+     * @param array $fieldValues Filters collection
      *
      * @return LengthAwarePaginator
      */
-    public function getPage(PagingInfo $paging, array $fieldValues = null): LengthAwarePaginator
+    public function getPage(PagingInfo $paging, array $fieldValues = []): LengthAwarePaginator
     {
         $query = $this->query()->where($fieldValues);
         return $query->paginate($paging->pageSize, ['*'], 'page', $paging->page);
@@ -229,28 +229,14 @@ class EloquentRepository implements IRepository
     /**
      * Get models collection as cursor.
      *
-     * @param CursorRequest $cursor
-     * @param array|null $fieldValues Filters collection
+     * @param CursorRequest $cursor Request with cursor params
+     * @param array $fieldValues Filters collection
      *
      * @return CursorResult
      */
-    public function getCursorPage(CursorRequest $cursor, array $fieldValues = null): CursorResult
+    public function getCursorPage(CursorRequest $cursor, array $fieldValues = []): CursorResult
     {
         return $this->toCursorResult($cursor, $this->query()->where($fieldValues));
-    }
-
-    /**
-     * Wrap the query to support cursor pagination with custom sort.
-     *
-     * @deprecated Now it's default implementation of toCursorResult.
-     *
-     * @param CursorRequest $cursor Requested cursor parameters
-     * @param Builder $query Query builder
-     * @return CursorResult
-     */
-    protected function toCursorResultWithCustomSort(CursorRequest $cursor, $query): CursorResult
-    {
-        return $this->toCursorResult($cursor, $query);
     }
 
     /**
@@ -258,6 +244,7 @@ class EloquentRepository implements IRepository
      *
      * @param CursorRequest $cursor Requested cursor parameters
      * @param Builder|QueryBuilder $query Query builder
+     *
      * @return CursorResult
      */
     protected function toCursorResult(CursorRequest $cursor, $query): CursorResult
@@ -266,6 +253,8 @@ class EloquentRepository implements IRepository
     }
 
     /**
+     * Returns base query.
+     *
      * @return Builder
      */
     protected function query(): Builder
@@ -347,11 +336,11 @@ class EloquentRepository implements IRepository
     {
         // Check that table not joined yet
         $joins = [];
-        foreach ((array) $query->getQuery()->joins as $key => $join) {
+        foreach ((array)$query->getQuery()->joins as $key => $join) {
             $joins[] = $join->table;
         }
 
-        if (! in_array($table, $joins)) {
+        if (!in_array($table, $joins)) {
             $query->leftJoin($table, $foreign, '=', $other);
         }
 
@@ -396,16 +385,26 @@ class EloquentRepository implements IRepository
      * @param array $with Which relations should be preloaded
      * @param array $withCounts Which related entities should be counted
      * @param array $where Conditions that retrieved entities should satisfy
-     * @param SortOptions $sortOptions How list of item should be sorted
+     * @param SortOptions|null $sortOptions How list of item should be sorted
      *
      * @return Collection
      */
     public function getWith(
         array $with,
-        array $withCounts = null,
-        array $where = null,
-        SortOptions $sortOptions = null
+        array $withCounts = [],
+        array $where = [],
+        ?SortOptions $sortOptions = null
     ): Collection {
         return $this->getWithBuilder($with, $withCounts, $where, $sortOptions)->get();
+    }
+
+    /**
+     * Return entities count.
+     *
+     * @return integer
+     */
+    public function count(): int
+    {
+        return $this->query()->count();
     }
 }

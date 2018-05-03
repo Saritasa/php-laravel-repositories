@@ -1,6 +1,6 @@
 <?php
 
-namespace Saritasa\Contracts;
+namespace Saritasa\LaravelRepositories\Contracts;
 
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
@@ -8,9 +8,9 @@ use Illuminate\Support\Collection;
 use Saritasa\DingoApi\Paging\CursorRequest;
 use Saritasa\DingoApi\Paging\CursorResult;
 use Saritasa\DingoApi\Paging\PagingInfo;
-use Saritasa\DTO\SortOptions;
-use Saritasa\Exceptions\ModelNotFoundException;
-use Saritasa\Exceptions\RepositoryException;
+use Saritasa\LaravelRepositories\DTO\SortOptions;
+use Saritasa\LaravelRepositories\Exceptions\ModelNotFoundException;
+use Saritasa\LaravelRepositories\Exceptions\RepositoryException;
 
 /**
  * Generic model repository contract - manages stored entities
@@ -36,7 +36,7 @@ interface IRepository
     /**
      * Find model by their id.
      *
-     * @param string|int $id
+     * @param string|int $id Model id to find
      *
      * @return Model
      *
@@ -107,17 +107,17 @@ interface IRepository
      *
      * @return LengthAwarePaginator
      */
-    public function getPage(PagingInfo $paging, array $fieldValues = null): LengthAwarePaginator;
+    public function getPage(PagingInfo $paging, array $fieldValues = []): LengthAwarePaginator;
 
     /**
      * Get models collection as cursor.
      *
-     * @param CursorRequest $cursor
+     * @param CursorRequest $cursor Request with cursor data
      * @param array|null $fieldValues Filters collection
      *
      * @return CursorResult
      */
-    public function getCursorPage(CursorRequest $cursor, array $fieldValues = null): CursorResult;
+    public function getCursorPage(CursorRequest $cursor, array $fieldValues = []): CursorResult;
 
     /**
      * Retrieve list of entities that satisfied $where conditions.
@@ -131,8 +131,15 @@ interface IRepository
      */
     public function getWith(
         array $with,
-        array $withCounts = null,
-        array $where = null,
+        array $withCounts = [],
+        array $where = [],
         SortOptions $sortOptions = null
     ): Collection;
+
+    /**
+     * Return entities count.
+     *
+     * @return integer
+     */
+    public function count(): int;
 }

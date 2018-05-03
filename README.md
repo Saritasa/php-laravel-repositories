@@ -8,7 +8,7 @@
 
 Implementation of Repository pattern for Laravel (on top of Eloquent)
 
-## Laravel 5.x
+## Laravel 5.5
 
 Install the ```saritasa/laravel-repositories``` package:
 
@@ -16,12 +16,17 @@ Install the ```saritasa/laravel-repositories``` package:
 $ composer require saritasa/laravel-repositories
 ```
 
-*Note:* For Laravel 5.4 use 1.* versions, for Laravel 5.5+ use 2.*
-
 ## Available classes
 
-### IRepository
-Interface, declaring common methods
+### RepositoryFactory
+Base iRepositoryFactory implementation. You can register IRepository implementation to some model. In when you will be getting repository for this model - you will receive this registered object.
+
+**Example**
+```php 
+    $repositoryFactory = app(IRepositoryFactory::class);
+    $repositoryFactory->register(User::class, Repository::class);
+```
+*Your repository must implement IRepository contract and receive string $modelClass in constructor.*
 
 ### Repository
 Repository class implements **IRepository** interface. Contains helper methods to build query for SQL-like storages.
@@ -54,9 +59,7 @@ FROM "users"
   LEFT JOIN "cars" ON "cars"."user_id" = "users"."id"
   LEFT JOIN "phones" ON "phones"."profile_id" = "profiles"."id"
 ```
-
-### IEloquentRepository, EloquentRepository
-In addition to **Repository** has **getWith()** method that allows to retrieve list of entities with 
+**Repository** has **getWith()** method that allows to retrieve list of entities with 
 eager loaded related models and related models counts. Also allows to filter this list by given criteria 
 and sort in requested order.
 
@@ -75,7 +78,9 @@ and sort order direction that should be one of **OrderDirections** enum value.
 
 ## Exceptions
 ### Repository Exception
-Should be thrown by class, implementing IRepository, if there is no more suitable exception defined.
+Base exception for repository layer.
+### Model not found Exception
+Throws in case when some model not exists in storage.
 
 **Example**:
 ```php

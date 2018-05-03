@@ -1,6 +1,6 @@
 <?php
 
-namespace Saritasa\Enums;
+namespace Saritasa\LaravelRepositories\Enums;
 
 use Saritasa\Enum;
 

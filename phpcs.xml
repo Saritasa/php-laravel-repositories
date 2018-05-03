@@ -8,7 +8,7 @@
     <exclude-pattern>*.xml</exclude-pattern>
 
     <arg name="colors"/>
-    <arg value="ps"/>
+    <arg value="p"/>
 
     <rule ref="PSR2"/>
     <rule ref="PSR1.Classes.ClassDeclaration.MissingNamespace" />
@@ -30,6 +30,8 @@
     </rule>
     <rule ref="Generic.CodeAnalysis.UselessOverridingMethod" />
     <rule ref="Generic.Commenting.Fixme" />
-    <!--<rule ref="Generic.Commenting.Todo" />-->
+    <rule ref="Generic.Commenting.Todo" />
     <rule ref="Generic.ControlStructures.InlineControlStructure" />
 </ruleset>
+
+

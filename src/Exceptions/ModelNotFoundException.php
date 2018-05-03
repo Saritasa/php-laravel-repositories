@@ -1,8 +1,8 @@
 <?php
 
-namespace Saritasa\Exceptions;
+namespace Saritasa\LaravelRepositories\Exceptions;
 
-use Saritasa\Contracts\IRepository;
+use Saritasa\LaravelRepositories\Contracts\IRepository;
 use Throwable;
 
 /**
@@ -27,13 +27,13 @@ class ModelNotFoundException extends RepositoryException
     protected $id;
 
     /**
-     * ModelNotFoundException constructor.
+     * Throws in repositories when model not found.
      *
-     * @param IRepository $repository
-     * @param int $id
-     * @param Throwable|null $previous
+     * @param IRepository $repository Repository which throws an exception.
+     * @param int $id Id with which model was not found
+     * @param Throwable|null $previous Previous exception
      */
-    public function __construct(IRepository $repository, int $id, Throwable $previous = null)
+    public function __construct(IRepository $repository, int $id, ?Throwable $previous = null)
     {
         $this->modelClass = $repository->getModelClass();
         $this->id = $id;
@@ -53,7 +53,7 @@ class ModelNotFoundException extends RepositoryException
     /**
      * Return id with which was an attempt to find model.
      *
-     * @return int
+     * @return integer
      */
     public function getId(): int
     {

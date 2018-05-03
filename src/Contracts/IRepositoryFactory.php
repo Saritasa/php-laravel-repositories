@@ -1,8 +1,8 @@
 <?php
 
-namespace Saritasa\Contracts;
+namespace Saritasa\LaravelRepositories\Contracts;
 
-use Saritasa\Exceptions\RepositoryException;
+use Saritasa\LaravelRepositories\Exceptions\RepositoryException;
 
 /**
  * Repositories factory.

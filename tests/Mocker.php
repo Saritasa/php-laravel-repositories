@@ -1,6 +1,6 @@
 <?php
 
-namespace Saritasa\Repositories\Tests;
+namespace Saritasa\LaravelRepositories\Tests;
 
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolver;

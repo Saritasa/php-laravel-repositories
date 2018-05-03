@@ -25,12 +25,12 @@
     "minimum-stability": "alpha",
     "autoload": {
         "psr-4" : {
-            "Saritasa\\": "src/"
+            "Saritasa\\LaravelRepositories\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4" : {
-            "Saritasa\\Repositories\\Tests\\": "tests/"
+            "Saritasa\\LaravelRepositories\\Tests\\": "tests/"
         }
     },
     "config": {
@@ -39,7 +39,12 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "2.0.x-dev"
+            "dev-master": "3.0.x-dev"
+        },
+        "laravel": {
+            "providers": [
+                "Saritasa\\LaravelRepositories\\LaravelRepositoriesServiceProvider"
+            ]
         }
     }
 }

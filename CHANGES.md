@@ -1,5 +1,14 @@
 # Changes History
 
+3.0.0
+------
++ Add IRepositoryFactory contract and base implementation.
++ Update IRepository contract and base implementation.
++ Changed namespace to Saritasa\\LaravelRepositories .
++ Removed all controllers classes and unused interface.
++ Add ModelNotFound exception.
++ Switch minimum PHP version to 7.1
+
 2.1.1
 ------
 + Change catching type in Repository constructor from \Exception to \Throwable

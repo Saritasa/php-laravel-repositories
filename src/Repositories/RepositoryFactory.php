@@ -1,15 +1,15 @@
 <?php
 
-namespace Saritasa\Repositories;
+namespace Saritasa\LaravelRepositories\Repositories;
 
-use Saritasa\Exceptions\RepositoryException;
-use Saritasa\Contracts\IRepository;
-use Saritasa\Contracts\IRepositoryFactory;
+use Saritasa\LaravelRepositories\Exceptions\RepositoryException;
+use Saritasa\LaravelRepositories\Contracts\IRepository;
+use Saritasa\LaravelRepositories\Contracts\IRepositoryFactory;
 
 /**
  * Factories for eloquent repositories.
  */
-class EloquentRepositoryFactory implements IRepositoryFactory
+class RepositoryFactory implements IRepositoryFactory
 {
     /**
      * Registered repositories.
@@ -56,7 +56,7 @@ class EloquentRepositoryFactory implements IRepositoryFactory
         if (isset($this->registeredServiceManagers[$modelClass])) {
             return new $this->registeredRepositories[$modelClass]($modelClass);
         }
-        return new EloquentRepository($modelClass);
+        return new Repository($modelClass);
     }
 
     /**

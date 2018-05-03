@@ -1,22 +1,22 @@
 <?php
 
-namespace Saritasa\Repositories\Tests;
+namespace Saritasa\LaravelRepositories\Tests;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use PHPUnit\Framework\TestCase;
-use Saritasa\DTO\SortOptions;
-use Saritasa\Enums\OrderDirections;
-use Saritasa\Exceptions\RepositoryException;
-use Saritasa\Repositories\EloquentRepository;
+use Saritasa\Exceptions\InvalidEnumValueException;
+use Saritasa\LaravelRepositories\DTO\SortOptions;
+use Saritasa\LaravelRepositories\Enums\OrderDirections;
+use Saritasa\LaravelRepositories\Exceptions\RepositoryException;
+use Saritasa\LaravelRepositories\Repositories\Repository;
 
 /**
  * Check Eloquent repository.
  */
 class EloquentRepositoryTest extends TestCase
 {
-
-    /** @var EloquentEntitiesRepository */
+    /** @var EntityRepository */
     private $repository;
 
     /**
@@ -25,11 +25,12 @@ class EloquentRepositoryTest extends TestCase
      * @param string|null $name
      * @param array $data
      * @param string $dataName
+     * @throws RepositoryException
      */
     public function __construct(string $name = null, array $data = [], string $dataName = '')
     {
         parent::__construct($name, $data, $dataName);
-        $this->repository = new EloquentEntitiesRepository();
+        $this->repository = new EntityRepository();
     }
 
     public function setUp()
@@ -45,7 +46,7 @@ class EloquentRepositoryTest extends TestCase
     public function testCreationWhenModelClassInvalid()
     {
         $this->expectException(RepositoryException::class);
-        new EloquentRepository('class');
+        new Repository('class');
     }
 
     /**
@@ -69,6 +70,7 @@ class EloquentRepositoryTest extends TestCase
      * Test that repository's getWith() method performs valid sorting.
      *
      * @return void
+     * @throws InvalidEnumValueException
      */
     public function testGetWithOrdering()
     {
@@ -134,7 +136,7 @@ class PersonsTestModel extends Model
 /**
  * Fake company records eloquent repository class. Has debug methods for performing tests.
  */
-class EloquentEntitiesRepository extends EloquentRepository
+class EntityRepository extends Repository
 {
 
     public function __construct()
