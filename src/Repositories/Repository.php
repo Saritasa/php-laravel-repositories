@@ -24,6 +24,7 @@ use Saritasa\LaravelRepositories\Exceptions\RepositoryException;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Saritasa\LaravelRepositories\Contracts\IRepository;
 use Illuminate\Database\Eloquent\ModelNotFoundException as EloquentModelNotFountException;
+use Throwable;
 
 /**
  * Eloquent model repository. Manages stored entities.
@@ -66,36 +67,21 @@ class Repository implements IRepository
         $this->modelClass = $modelClass;
         try {
             $this->model = new $this->modelClass;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             throw new RepositoryException($this, "Error creating instance of model $this->modelClass", 500, $e);
+        }
+        if (!$this->model instanceof Model) {
+            throw new RepositoryException($this, "$this->modelClass must extend " . Model::class, 500);
         }
     }
 
-    /**
-     * Returns model class of current repository.
-     *
-     * @return string
-     */
+    /** {@inheritdoc} */
     public function getModelClass(): string
     {
         return $this->modelClass;
     }
 
-    /**
-     * Return models visible fields.
-     *
-     * @return array
-     */
-    public function getVisibleFields(): array
-    {
-        return $this->model->getVisible();
-    }
-
-    /**
-     * Returns model validation rules.
-     *
-     * @return array
-     */
+    /** {@inheritdoc} */
     public function getModelValidationRules(): array
     {
         if (method_exists($this->model, 'getValidationRules')) {
@@ -107,44 +93,23 @@ class Repository implements IRepository
         return [];
     }
 
-    /**
-     * Find model by their id.
-     *
-     * @param string|int $id Id to find model
-     *
-     * @return Model
-     *
-     * @throws ModelNotFoundException
-     */
+    /** {@inheritdoc} */
     public function findOrFail($id): Model
     {
         try {
-            $model = $this->query()->findOrFail($id);
-            return $model;
+            return $this->query()->findOrFail($id);
         } catch (EloquentModelNotFountException $exception) {
             throw new ModelNotFoundException($this, $id, $exception);
         }
     }
 
-    /**
-     * Returns first model matching given filters.
-     *
-     * @param array $fieldValues Filters collection
-     * @return Model|null
-     */
+    /** {@inheritdoc} */
     public function findWhere(array $fieldValues): ?Model
     {
         return $this->query()->where($fieldValues)->first();
     }
 
-    /**
-     * Create modal in storage.
-     *
-     * @param Model $model Model to create
-     * @return Model
-     *
-     * @throws RepositoryException
-     */
+    /** {@inheritdoc} */
     public function create(Model $model): Model
     {
         if (!$model->save()) {
@@ -153,15 +118,7 @@ class Repository implements IRepository
         return $model;
     }
 
-    /**
-     * Save model in storage.
-     *
-     * @param Model $model Model to save
-     *
-     * @return Model
-     *
-     * @throws RepositoryException
-     */
+    /** {@inheritdoc} */
     public function save(Model $model): Model
     {
         if (!$model->save()) {
@@ -170,19 +127,12 @@ class Repository implements IRepository
         return $model;
     }
 
-    /**
-     * Delete model in storage.
-     *
-     * @param Model $model Model to delete
-     * @return void
-     *
-     * @throws RepositoryException
-     */
+    /** {@inheritdoc} */
     public function delete(Model $model): void
     {
         try {
             $result = $model->delete();
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             throw new RepositoryException($this, "Cannot delete $this->modelClass record", 500, $exception);
         }
         if (!$result) {
@@ -190,50 +140,26 @@ class Repository implements IRepository
         }
     }
 
-    /**
-     * Returns models list.
-     *
-     * @return Collection
-     */
+    /** {@inheritdoc} */
     public function get(): Collection
     {
         return $this->query()->get();
     }
 
-    /**
-     * Returns models list matching given filters.
-     *
-     * @param array $fieldValues Filters collection
-     *
-     * @return Collection
-     */
+    /** {@inheritdoc} */
     public function getWhere(array $fieldValues): Collection
     {
         return $this->query()->where($fieldValues)->get();
     }
 
-    /**
-     * Get models collection as pagination.
-     *
-     * @param PagingInfo $paging Paging information
-     * @param array $fieldValues Filters collection
-     *
-     * @return LengthAwarePaginator
-     */
+    /** {@inheritdoc} */
     public function getPage(PagingInfo $paging, array $fieldValues = []): LengthAwarePaginator
     {
         $query = $this->query()->where($fieldValues);
         return $query->paginate($paging->pageSize, ['*'], 'page', $paging->page);
     }
 
-    /**
-     * Get models collection as cursor.
-     *
-     * @param CursorRequest $cursor Request with cursor params
-     * @param array $fieldValues Filters collection
-     *
-     * @return CursorResult
-     */
+    /** {@inheritdoc} */
     public function getCursorPage(CursorRequest $cursor, array $fieldValues = []): CursorResult
     {
         return $this->toCursorResult($cursor, $this->query()->where($fieldValues));
@@ -379,16 +305,7 @@ class Repository implements IRepository
             });
     }
 
-    /**
-     * Retrieve list of entities that satisfied $where conditions.
-     *
-     * @param array $with Which relations should be preloaded
-     * @param array $withCounts Which related entities should be counted
-     * @param array $where Conditions that retrieved entities should satisfy
-     * @param SortOptions|null $sortOptions How list of item should be sorted
-     *
-     * @return Collection
-     */
+    /** {@inheritdoc} */
     public function getWith(
         array $with,
         array $withCounts = [],
@@ -398,11 +315,7 @@ class Repository implements IRepository
         return $this->getWithBuilder($with, $withCounts, $where, $sortOptions)->get();
     }
 
-    /**
-     * Return entities count.
-     *
-     * @return integer
-     */
+    /** {@inheritdoc} */
     public function count(): int
     {
         return $this->query()->count();

@@ -20,14 +20,14 @@ use Saritasa\LaravelRepositories\Exceptions\RepositoryException;
 interface IRepository
 {
     /**
-     * Returns model class of current repository.
+     * Returns managed by this repository entity class name.
      *
      * @return string
      */
     public function getModelClass(): string;
 
     /**
-     * Returns model validation rules.
+     * Returns rules to validate model which managed by this repository.
      *
      * @return array
      */
@@ -53,7 +53,7 @@ interface IRepository
     public function findWhere(array $fieldValues): ?Model;
 
     /**
-     * Create modal in storage.
+     * Create model in storage.
      *
      * @param Model $entity Model to create
      * @return Model
@@ -120,19 +120,19 @@ interface IRepository
     public function getCursorPage(CursorRequest $cursor, array $fieldValues = []): CursorResult;
 
     /**
-     * Retrieve list of entities that satisfied $where conditions.
+     * Retrieve list of entities that satisfied requested conditions.
      *
      * @param array $with Which relations should be preloaded
      * @param array $withCounts Which related entities should be counted
-     * @param array $where Conditions that retrieved entities should satisfy
-     * @param SortOptions $sortOptions How list of item should be sorted
+     * @param array $fieldValues Conditions that retrieved entities should satisfy
+     * @param SortOptions $sortOptions How list of items should be sorted
      *
      * @return Collection
      */
     public function getWith(
         array $with,
         array $withCounts = [],
-        array $where = [],
+        array $fieldValues = [],
         SortOptions $sortOptions = null
     ): Collection;
 

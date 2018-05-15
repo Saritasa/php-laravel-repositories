@@ -28,7 +28,7 @@ class CachingRepository implements IRepository
     protected $repository;
 
     /**
-     *  Cache storage implementation.
+     * Cache storage implementation.
      *
      * @var CacheRepository
      */
@@ -42,7 +42,7 @@ class CachingRepository implements IRepository
     protected $prefix;
 
     /**
-     * Cache timeout
+     * Cache timeout in minutes.
      *
      * @var int
      */
@@ -54,7 +54,7 @@ class CachingRepository implements IRepository
      * @param IRepository $repository Repositories which call will be cached
      * @param CacheRepository $cacheRepository Cache storage implementation
      * @param string $prefix Cache prefix
-     * @param int $cacheTimeout Time while cache data will bea actual
+     * @param int $cacheTimeout Time in minutes while cache data will be actual
      */
     public function __construct(
         IRepository $repository,

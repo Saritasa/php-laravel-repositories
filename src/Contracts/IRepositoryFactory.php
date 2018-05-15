@@ -3,16 +3,17 @@
 namespace Saritasa\LaravelRepositories\Contracts;
 
 use Saritasa\LaravelRepositories\Exceptions\RepositoryException;
+use Saritasa\LaravelRepositories\Exceptions\RepositoryRegisterException;
 
 /**
- * Repositories factory.
+ * Builds repositories for managing models.
  */
 interface IRepositoryFactory
 {
     /**
-     * Returns needed repository for model class.
+     * Returns repository that can manage given model class
      *
-     * @param string $modelClass Model class
+     * @param string $modelClass Model class that need to manage
      *
      * @return IRepository
      *
@@ -21,12 +22,14 @@ interface IRepositoryFactory
     public function getRepository(string $modelClass): IRepository;
 
     /**
-     * Registered certain repository realization for model class.
+     * Registers certain repository implementation for model class.
      *
-     * @param string $modelClass Model class
+     * @param string $modelClass Model class that needed certain repository
      * @param string $repositoryClass Repository realization class
      *
      * @return void
+     *
+     * @throws RepositoryRegisterException
      */
     public function register(string $modelClass, string $repositoryClass): void;
 }
