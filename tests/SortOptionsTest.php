@@ -1,9 +1,9 @@
 <?php
 
-namespace Saritasa\Repositories\Tests;
+namespace Saritasa\LaravelRepositories\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Saritasa\DTO\SortOptions;
+use Saritasa\LaravelRepositories\DTO\SortOptions;
 use Saritasa\Exceptions\InvalidEnumValueException;
 
 /**

@@ -1,6 +1,6 @@
 <?php
 
-namespace Saritasa\Repositories\Tests;
+namespace Saritasa\LaravelRepositories\Tests;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\RelationNotFoundException;
@@ -11,14 +11,15 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use PHPUnit\Framework\TestCase;
 use Saritasa\Exceptions\NotImplementedException;
-use Saritasa\Repositories\Base\Repository;
+use Saritasa\LaravelRepositories\Exceptions\RepositoryException;
+use Saritasa\LaravelRepositories\Repositories\Repository;
 
 /**
  * Check join relation repository method.
  */
 class JoinRelationTest extends TestCase
 {
-    /** @var EntitiesRepository */
+    /** @var EntityRepository */
     private $repository;
 
     /**
@@ -28,7 +29,7 @@ class JoinRelationTest extends TestCase
      * @param array $data
      * @param string $dataName
      *
-     * @throws \Saritasa\Exceptions\RepositoryException
+     * @throws RepositoryException
      */
     public function __construct(string $name = null, array $data = [], string $dataName = '')
     {
@@ -253,7 +254,13 @@ class Note extends Model
  */
 class EntitiesRepository extends Repository
 {
-    protected $modelClass = User::class;
+    /**
+     * Fake user records repository class. Has debug methods for performing tests.
+     */
+    public function __construct()
+    {
+        parent::__construct(User::class);
+    }
 
     /**
      * Base query string. Used for testing SQL string retrieving.

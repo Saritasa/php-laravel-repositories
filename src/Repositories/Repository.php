@@ -1,6 +1,6 @@
 <?php
 
-namespace Saritasa\Repositories\Base;
+namespace Saritasa\LaravelRepositories\Repositories;
 
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -12,25 +12,27 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
-use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Collection;
 use Saritasa\DingoApi\Paging\CursorQueryBuilder;
 use Saritasa\DingoApi\Paging\CursorRequest;
 use Saritasa\DingoApi\Paging\CursorResult;
 use Saritasa\DingoApi\Paging\PagingInfo;
+use Saritasa\LaravelRepositories\DTO\SortOptions;
+use Saritasa\LaravelRepositories\Exceptions\ModelNotFoundException;
 use Saritasa\Exceptions\NotImplementedException;
-use Saritasa\Exceptions\RepositoryException;
+use Saritasa\LaravelRepositories\Exceptions\RepositoryException;
+use Illuminate\Database\Query\Builder as QueryBuilder;
+use Saritasa\LaravelRepositories\Contracts\IRepository;
+use Illuminate\Database\Eloquent\ModelNotFoundException as EloquentModelNotFountException;
+use Throwable;
 
 /**
- * Superclass for any repository.
- * Contains logic of receipt the entity list, with filters (search) and sort.
+ * Eloquent model repository. Manages stored entities.
  */
 class Repository implements IRepository
 {
     /**
      * FQN model name of the repository. Must be determined in the inheritors.
-     *
-     * Note: PHP 7 allows to use "SomeModel::class" just as property initial value. Use it.
      *
      * @var string
      */
@@ -56,60 +58,34 @@ class Repository implements IRepository
      * Superclass for any repository.
      * Contains logic of receipt the entity list, with filters (search) and sort.
      *
+     * @param string $modelClass Model class for this repository
+     *
      * @throws RepositoryException
      */
-    public function __construct()
+    public function __construct(string $modelClass)
     {
-        if (!$this->modelClass) {
-            throw new RepositoryException($this, 'Mandatory property $modelClass not defined');
-        }
+        $this->modelClass = $modelClass;
         try {
             $this->model = new $this->modelClass;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             throw new RepositoryException($this, "Error creating instance of model $this->modelClass", 500, $e);
         }
-        if (!is_a($this->model, Model::class, true)) {
-            throw new RepositoryException($this, "$this->modelClass must extend ".Model::class);
+        if (!$this->model instanceof Model) {
+            throw new RepositoryException($this, "$this->modelClass must extend " . Model::class, 500);
         }
     }
 
-    public function __get($key)
-    {
-        $result = null;
-        switch ($key) {
-            case 'model':
-                $result = new $this->modelClass;
-                break;
-            case 'searchableFields':
-                $result = $this->searchableFields;
-                break;
-            case 'modelValidationRules':
-                $result = $this->getModelValidationRules();
-                break;
-            default:
-                throw new RepositoryException($this, "Unknown property ! $key requested");
-        }
-        return $result;
-    }
-
+    /** {@inheritdoc} */
     public function getModelClass(): string
     {
         return $this->modelClass;
     }
 
-    /**
-     * Get visible fields from model
-     */
-    public function getVisibleFields()
+    /** {@inheritdoc} */
+    public function getModelValidationRules(): array
     {
-        return $this->model->getVisible();
-    }
-
-    public function getModelValidationRules(Model $model = null): array
-    {
-        $model = $model ?: new $this->modelClass;
-        if (method_exists($model, 'getValidationRules')) {
-            return $model->getValidationRules();
+        if (method_exists($this->model, 'getValidationRules')) {
+            return $this->model->getValidationRules();
         }
         if (isset($this->validationRules)) {
             return $this->validationRules;
@@ -117,21 +93,23 @@ class Repository implements IRepository
         return [];
     }
 
+    /** {@inheritdoc} */
     public function findOrFail($id): Model
     {
-        return $this->query()->findOrFail($id);
+        try {
+            return $this->query()->findOrFail($id);
+        } catch (EloquentModelNotFountException $exception) {
+            throw new ModelNotFoundException($this, $id, $exception);
+        }
     }
 
-    public function findOrNew($id): Model
-    {
-        return $this->query()->findOrNew($id);
-    }
-
-    public function findWhere(array $fieldValues)//: Model
+    /** {@inheritdoc} */
+    public function findWhere(array $fieldValues): ?Model
     {
         return $this->query()->where($fieldValues)->first();
     }
 
+    /** {@inheritdoc} */
     public function create(Model $model): Model
     {
         if (!$model->save()) {
@@ -140,6 +118,7 @@ class Repository implements IRepository
         return $model;
     }
 
+    /** {@inheritdoc} */
     public function save(Model $model): Model
     {
         if (!$model->save()) {
@@ -148,53 +127,50 @@ class Repository implements IRepository
         return $model;
     }
 
-    public function delete(Model $model)
+    /** {@inheritdoc} */
+    public function delete(Model $model): void
     {
-        if (!$model->delete()) {
+        try {
+            $result = $model->delete();
+        } catch (Throwable $exception) {
+            throw new RepositoryException($this, "Cannot delete $this->modelClass record", 500, $exception);
+        }
+        if (!$result) {
             throw new RepositoryException($this, "Cannot delete $this->modelClass record");
         }
     }
 
+    /** {@inheritdoc} */
     public function get(): Collection
     {
         return $this->query()->get();
     }
 
+    /** {@inheritdoc} */
     public function getWhere(array $fieldValues): Collection
     {
         return $this->query()->where($fieldValues)->get();
     }
 
-    public function getPage(PagingInfo $paging, array $fieldValues = null): LengthAwarePaginator
+    /** {@inheritdoc} */
+    public function getPage(PagingInfo $paging, array $fieldValues = []): LengthAwarePaginator
     {
         $query = $this->query()->where($fieldValues);
         return $query->paginate($paging->pageSize, ['*'], 'page', $paging->page);
     }
 
-    public function getCursorPage(CursorRequest $cursor, array $fieldValues = null): CursorResult
+    /** {@inheritdoc} */
+    public function getCursorPage(CursorRequest $cursor, array $fieldValues = []): CursorResult
     {
         return $this->toCursorResult($cursor, $this->query()->where($fieldValues));
     }
 
     /**
-     * Wrap the query to support cursor pagination with custom sort.
-     *
-     * @deprecated Now it's default implementation of toCursorResult.
-     *
-     * @param CursorRequest $cursor Requested cursor parameters
-     * @param Builder|QueryBuilder $query Query builder
-     * @return CursorResult
-     */
-    protected function toCursorResultWithCustomSort(CursorRequest $cursor, $query)
-    {
-        return $this->toCursorResult($cursor, $query);
-    }
-    
-    /**
      * Execute query and return page, corresponding to cursor request
      *
      * @param CursorRequest $cursor Requested cursor parameters
      * @param Builder|QueryBuilder $query Query builder
+     *
      * @return CursorResult
      */
     protected function toCursorResult(CursorRequest $cursor, $query): CursorResult
@@ -202,6 +178,11 @@ class Repository implements IRepository
         return (new CursorQueryBuilder($cursor, $query))->getCursor();
     }
 
+    /**
+     * Returns base query.
+     *
+     * @return Builder
+     */
     protected function query(): Builder
     {
         return $this->model->query();
@@ -281,14 +262,62 @@ class Repository implements IRepository
     {
         // Check that table not joined yet
         $joins = [];
-        foreach ((array) $query->getQuery()->joins as $key => $join) {
+        foreach ((array)$query->getQuery()->joins as $key => $join) {
             $joins[] = $join->table;
         }
 
-        if (! in_array($table, $joins)) {
+        if (!in_array($table, $joins)) {
             $query->leftJoin($table, $foreign, '=', $other);
         }
 
         return $query;
+    }
+
+    /**
+     * Returns builder that satisfied requested conditions, with eager loaded requested relations and relations counts,
+     * ordered by requested rules.
+     *
+     * @param array $with Which relations should be preloaded
+     * @param array $withCounts Which related entities should be counted
+     * @param array $where Conditions that retrieved entities should satisfy
+     * @param SortOptions $sortOptions How list of item should be sorted
+     *
+     * @return Builder
+     */
+    protected function getWithBuilder(
+        array $with,
+        array $withCounts = null,
+        array $where = null,
+        SortOptions $sortOptions = null
+    ): Builder {
+        return $this->query()
+            ->when($with, function (Builder $query) use ($with) {
+                return $query->with($with);
+            })
+            ->when($withCounts, function (Builder $query) use ($withCounts) {
+                return $query->withCount($withCounts);
+            })
+            ->when($where, function (Builder $query) use ($where) {
+                return $query->where($where);
+            })
+            ->when($sortOptions, function (Builder $query) use ($sortOptions) {
+                return $query->orderBy($sortOptions->orderBy, $sortOptions->sortOrder);
+            });
+    }
+
+    /** {@inheritdoc} */
+    public function getWith(
+        array $with,
+        array $withCounts = [],
+        array $where = [],
+        ?SortOptions $sortOptions = null
+    ): Collection {
+        return $this->getWithBuilder($with, $withCounts, $where, $sortOptions)->get();
+    }
+
+    /** {@inheritdoc} */
+    public function count(): int
+    {
+        return $this->query()->count();
     }
 }
