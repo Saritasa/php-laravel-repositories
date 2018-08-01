@@ -13,9 +13,7 @@ use Saritasa\LaravelRepositories\Exceptions\ModelNotFoundException;
 use Saritasa\LaravelRepositories\Exceptions\RepositoryException;
 
 /**
- * Generic model repository contract - manages stored entities
- *
- * @property-read array $searchableFields - Fields, available for direct search by values
+ * Generic model repository contract - manages stored entities.
  */
 interface IRepository
 {

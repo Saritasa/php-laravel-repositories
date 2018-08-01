@@ -303,4 +303,12 @@ class CachingRepository implements IRepository
             return $this->repository->count();
         });
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getSearchableFields(): array
+    {
+       return $this->repository->getSearchableFields();
+    }
 }
