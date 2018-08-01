@@ -320,4 +320,10 @@ class Repository implements IRepository
     {
         return $this->query()->count();
     }
+
+    /** {@inheritdoc} */
+    public function getSearchableFields(): array
+    {
+        return $this->searchableFields;
+    }
 }

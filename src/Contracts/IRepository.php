@@ -142,4 +142,12 @@ interface IRepository
      * @return integer
      */
     public function count(): int;
+
+    /**
+     * List of fields, allowed to use in the search.
+     * Should be determine in the inheritors. Determines the result of the list request of entities.
+     *
+     * @return  array
+     */
+    public function getSearchableFields(): array;
 }
