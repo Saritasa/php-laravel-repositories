@@ -1,5 +1,13 @@
 # Changes History
 
+3.1.0
+------
++ Add package configuration file.
++ Add ability to register custom repositories implementation using configuration file.
++ Add method getSearchableFields in IRepository contract and all implementation.
++ Make implementation of IRepositoryFactory in DI container as singleton by default.
++ Improve default provider documentation.
+
 3.0.0
 ------
 + Add IRepositoryFactory contract and base implementation.
