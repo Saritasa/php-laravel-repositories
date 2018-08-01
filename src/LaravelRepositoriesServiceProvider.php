@@ -51,7 +51,7 @@ class LaravelRepositoriesServiceProvider extends ServiceProvider
         $repositoryFactory = $this->app->make(IRepositoryFactory::class);
 
         foreach (config('laravel_repositories.bindings') as $className => $repository) {
-            $repositoryFactory->register($className,$repository);
+            $repositoryFactory->register($className, $repository);
         }
     }
 }

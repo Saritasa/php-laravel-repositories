@@ -309,6 +309,6 @@ class CachingRepository implements IRepository
      */
     public function getSearchableFields(): array
     {
-       return $this->repository->getSearchableFields();
+        return $this->repository->getSearchableFields();
     }
 }
