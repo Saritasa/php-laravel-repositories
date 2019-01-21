@@ -20,7 +20,7 @@ $ composer require saritasa/laravel-repositories
 ### Publish file
 To publish configuration file you can run next command:
 ```bash
-php artisan vendor:publish --tag=larave_repositories
+php artisan vendor:publish --tag=laravel_repositories
 ```
 It will copy file laravel_repositories.php in config directory.
 ### Register custom repositories implementaion
