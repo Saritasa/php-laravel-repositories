@@ -2,6 +2,7 @@
 
 namespace Saritasa\LaravelRepositories\Repositories;
 
+use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -17,7 +18,9 @@ use Saritasa\DingoApi\Paging\CursorQueryBuilder;
 use Saritasa\DingoApi\Paging\CursorRequest;
 use Saritasa\DingoApi\Paging\CursorResult;
 use Saritasa\DingoApi\Paging\PagingInfo;
+use Saritasa\LaravelRepositories\DTO\Criterion;
 use Saritasa\LaravelRepositories\DTO\SortOptions;
+use Saritasa\LaravelRepositories\Exceptions\BadCriteriaException;
 use Saritasa\LaravelRepositories\Exceptions\ModelNotFoundException;
 use Saritasa\Exceptions\NotImplementedException;
 use Saritasa\LaravelRepositories\Exceptions\RepositoryException;
@@ -46,6 +49,27 @@ class Repository implements IRepository
      * @var array
      */
     protected $searchableFields = [];
+
+    /**
+     * Available operators for operations with single value.
+     *
+     * @var array
+     */
+    protected $singleOperators = [
+        '=', '<', '>', '<=', '>=', '<>', '!=', '<=>',
+        'like', 'like binary', 'not like', 'ilike',
+        '&', '|', '^', '<<', '>>',
+        'rlike', 'regexp', 'not regexp',
+        '~', '~*', '!~', '!~*', 'similar to',
+        'not similar to', 'not ilike', '~~*', '!~~*',
+    ];
+
+    /**
+     * Available operators for operations with multiple values.
+     *
+     * @var array
+     */
+    protected $multipleOperators = ['in', 'not in'];
 
     /**
      * Sample instance of model type, handled by this repository
@@ -104,12 +128,6 @@ class Repository implements IRepository
     }
 
     /** {@inheritdoc} */
-    public function findWhere(array $fieldValues): ?Model
-    {
-        return $this->query()->where($fieldValues)->first();
-    }
-
-    /** {@inheritdoc} */
     public function create(Model $model): Model
     {
         if (!$model->save()) {
@@ -144,12 +162,6 @@ class Repository implements IRepository
     public function get(): Collection
     {
         return $this->query()->get();
-    }
-
-    /** {@inheritdoc} */
-    public function getWhere(array $fieldValues): Collection
-    {
-        return $this->query()->where($fieldValues)->get();
     }
 
     /** {@inheritdoc} */
@@ -306,16 +318,6 @@ class Repository implements IRepository
     }
 
     /** {@inheritdoc} */
-    public function getWith(
-        array $with,
-        array $withCounts = [],
-        array $where = [],
-        ?SortOptions $sortOptions = null
-    ): Collection {
-        return $this->getWithBuilder($with, $withCounts, $where, $sortOptions)->get();
-    }
-
-    /** {@inheritdoc} */
     public function count(): int
     {
         return $this->query()->count();
@@ -325,5 +327,151 @@ class Repository implements IRepository
     public function getSearchableFields(): array
     {
         return $this->searchableFields;
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @throws RepositoryException
+     */
+    public function getWith(
+        array $with,
+        ?array $withCounts = null,
+        ?array $where = null,
+        ?SortOptions $sortOptions = null
+    ): Collection {
+        $builder = $this->getWithBuilder($with, $withCounts, null, $sortOptions);
+
+        if ($where) {
+            $builder->addNestedWhereQuery($this->getNestedWhereConditions($builder->getQuery(), $where));
+        }
+
+        return $builder->get();
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @throws RepositoryException
+     */
+    public function getWhere(array $fieldValues): Collection
+    {
+        $builder = $this->query();
+
+        return $builder
+            ->addNestedWhereQuery($this->getNestedWhereConditions($builder->getQuery(), $fieldValues))
+            ->get();
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @throws RepositoryException
+     */
+    public function findWhere(array $fieldValues): ?Model
+    {
+        $builder = $this->query();
+
+        return $builder
+            ->addNestedWhereQuery($this->getNestedWhereConditions($builder->getQuery(), $fieldValues))
+            ->first();
+    }
+
+    /**
+     * Returns query builder with applied criteria. This method work recursively and group nested criteria in one level.
+     *
+     * @param QueryBuilder $builder Top level query builder
+     * @param array $criteria Nested list of criteria
+     *
+     * @return QueryBuilder
+     *
+     * @throws BadCriteriaException when any criterion is not valid
+     */
+    protected function getNestedWhereConditions(QueryBuilder $builder, array $criteria): QueryBuilder
+    {
+        $subQuery = $builder->forNestedWhere();
+        foreach ($criteria as $key => $criterionData) {
+            switch (true) {
+                case is_string($key) && (!is_array($criterionData) && !is_object($criterionData)):
+                    $criterion = new Criterion([Criterion::ATTRIBUTE => $key, Criterion::VALUE => $criterionData]);
+                    break;
+                case $criterionData instanceof Criterion:
+                    $criterion = $criterionData;
+                    break;
+                case is_int($key) && is_array($criterionData) && !empty($criterionData):
+                    $criterion = $this->parseCriterion($criterionData);
+                    break;
+                default:
+                    throw new BadCriteriaException($this);
+            }
+
+            if (!$this->isCriterionValid($criterion)) {
+                $subQuery->addNestedWhereQuery($this->getNestedWhereConditions($subQuery, $criterionData));
+                continue;
+            }
+
+            switch ($criterion->operator) {
+                case 'in':
+                    $subQuery->whereIn($criterion->attribute, $criterion->value, $criterion->boolean);
+                    break;
+                case 'not in':
+                    $subQuery->whereNotIn($criterion->attribute, $criterion->value, $criterion->boolean);
+                    break;
+                default:
+                    if ($criterion->value instanceof Carbon) {
+                        $subQuery->whereDate(
+                            $criterion->attribute,
+                            $criterion->operator,
+                            $criterion->value,
+                            $criterion->boolean
+                        );
+                        break;
+                    }
+                    $subQuery->where(
+                        $criterion->attribute,
+                        $criterion->operator,
+                        $criterion->value,
+                        $criterion->boolean
+                    );
+                    break;
+            }
+        }
+
+        return $subQuery;
+    }
+
+    /**
+     * Transforms criterion data into DTO.
+     *
+     * @param array $criterionData Criterion data to transform
+     *
+     * @return Criterion
+     */
+    protected function parseCriterion(array $criterionData): Criterion
+    {
+        return new Criterion([
+            Criterion::ATTRIBUTE => $criterionData[0] ?? null,
+            Criterion::OPERATOR => $criterionData[1] ?? null,
+            Criterion::VALUE => $criterionData[2] ?? null,
+            Criterion::BOOLEAN => $criterionData[3] ?? 'and',
+        ]);
+    }
+
+    /**
+     * Checks whether the criterion is valid.
+     *
+     * @param Criterion $criterion Criterion to check validity
+     *
+     * @return boolean
+     */
+    protected function isCriterionValid(Criterion $criterion): bool
+    {
+        $isMultipleOperator = (is_array($criterion->value) || $criterion->value instanceof Collection) &&
+            in_array($criterion->operator, $this->multipleOperators);
+        $isSingleOperator = !is_array($criterion->value) && in_array($criterion->operator, $this->singleOperators);
+
+        return is_string($criterion->attribute) &&
+            is_string($criterion->boolean) &&
+            ($isMultipleOperator || $isSingleOperator);
     }
 }
