@@ -392,7 +392,9 @@ class Repository implements IRepository
         $subQuery = $builder->forNestedWhere();
         foreach ($criteria as $key => $criterionData) {
             switch (true) {
-                case is_string($key) && (!is_array($criterionData) && !is_object($criterionData)):
+                case is_string($key)
+                    && ((!is_array($criterionData) && !is_object($criterionData))
+                        || $criterionData instanceof Carbon):
                     $criterion = new Criterion([Criterion::ATTRIBUTE => $key, Criterion::VALUE => $criterionData]);
                     break;
                 case $criterionData instanceof Criterion:
