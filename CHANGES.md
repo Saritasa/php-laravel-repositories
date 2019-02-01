@@ -1,5 +1,17 @@
 # Changes History
 
+3.2.1
+------
++ Methods getWith/findWhere/getWhere call when as value uses Carbon\Carbon instance and as key field name, now not throws BadCriteriaException.
+
+3.2.0
+------
++ Now in repository methods getWith/getWhere/findWhere could be passed
+instance of Criterion instead array.
++ Available use multiple in and not in operators in any nested level
++ Carbon instance can be passed to compare as date
++ In case of bad query state BadCriteriaException will be thrown
+
 3.1.0
 ------
 + Add package configuration file.
