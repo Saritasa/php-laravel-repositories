@@ -9,6 +9,6 @@ use Saritasa\Enum;
  */
 class OrderDirections extends Enum
 {
-    const ASC = 'asc';
-    const DESC = 'desc';
+    public const ASC = 'asc';
+    public const DESC = 'desc';
 }
