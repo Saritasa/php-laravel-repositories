@@ -10,6 +10,7 @@ use Saritasa\LaravelRepositories\DTO\SortOptions;
 use Saritasa\LaravelRepositories\Enums\OrderDirections;
 use Saritasa\LaravelRepositories\Exceptions\RepositoryException;
 use Saritasa\LaravelRepositories\Repositories\Repository;
+use SebastianBergmann\RecursionContext\InvalidArgumentException;
 
 /**
  * Check Eloquent repository.
@@ -25,6 +26,7 @@ class EloquentRepositoryTest extends TestCase
      * @param string|null $name
      * @param array $data
      * @param string $dataName
+     *
      * @throws RepositoryException
      */
     public function __construct(string $name = null, array $data = [], string $dataName = '')
@@ -33,7 +35,7 @@ class EloquentRepositoryTest extends TestCase
         $this->repository = new EntityRepository();
     }
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $resolver = Mocker::mockConnectionResolver();
@@ -42,8 +44,10 @@ class EloquentRepositoryTest extends TestCase
 
     /**
      * Checks that exception will thrown when model class is not exists or invalid.
+     *
+     * @throws RepositoryException
      */
-    public function testCreationWhenModelClassInvalid()
+    public function testCreationWhenModelClassInvalid(): void
     {
         $this->expectException(RepositoryException::class);
         new Repository('class');
@@ -53,8 +57,10 @@ class EloquentRepositoryTest extends TestCase
      * Test that repository's getWith() method performs valid filtering.
      *
      * @return void
+     *
+     * @throws InvalidArgumentException
      */
-    public function testGetWithWhere()
+    public function testGetWithWhere(): void
     {
         $whereConditions = [
             ['id', '=', 1],
@@ -70,9 +76,11 @@ class EloquentRepositoryTest extends TestCase
      * Test that repository's getWith() method performs valid sorting.
      *
      * @return void
+     *
      * @throws InvalidEnumValueException
+     * @throws InvalidArgumentException
      */
-    public function testGetWithOrdering()
+    public function testGetWithOrdering(): void
     {
         $sortOptions = new SortOptions('name', OrderDirections::DESC);
 
@@ -86,8 +94,9 @@ class EloquentRepositoryTest extends TestCase
      * Test that repository's getWith() method performs valid related models eager loads.
      *
      * @return void
+     * @throws InvalidArgumentException
      */
-    public function testGetWithEagerLoad()
+    public function testGetWithEagerLoad(): void
     {
         $eagerLoadedRelations = ['role', 'cars'];
         $expectedBuilder = CompanyTestModel::query()->with($eagerLoadedRelations);
@@ -100,8 +109,9 @@ class EloquentRepositoryTest extends TestCase
      * Test that repository's getWith() method performs valid related models counts retrieving.
      *
      * @return void
+     * @throws InvalidArgumentException
      */
-    public function testGetWithCounts()
+    public function testGetWithCounts(): void
     {
         $eagerLoadedRelationsCounts = ['persons'];
         $expectedSql = CompanyTestModel::query()->withCount($eagerLoadedRelationsCounts)->toSql();

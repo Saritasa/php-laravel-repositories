@@ -13,14 +13,19 @@ use PHPUnit\Framework\TestCase;
 use Saritasa\Exceptions\NotImplementedException;
 use Saritasa\LaravelRepositories\Exceptions\RepositoryException;
 use Saritasa\LaravelRepositories\Repositories\Repository;
+use SebastianBergmann\RecursionContext\InvalidArgumentException;
 
 /**
  * Check join relation repository method.
  */
 class JoinRelationTest extends TestCase
 {
-    /** @var EntityRepository */
-    private $repository;
+    /**
+     * Entity repository to test.
+     *
+     * @var EntityRepository
+     */
+    protected $repository;
 
     /**
      * Check join relation repository method.
@@ -37,7 +42,12 @@ class JoinRelationTest extends TestCase
         $this->repository = new EntitiesRepository();
     }
 
-    public function setUp()
+    /**
+     * Set up test parameters.
+     *
+     * @return void
+     */
+    public function setUp(): void
     {
         parent::setUp();
         $resolver = Mocker::mockConnectionResolver();
@@ -46,52 +56,66 @@ class JoinRelationTest extends TestCase
 
     /**
      * Test base query retrieving.
+     *
+     * @throws InvalidArgumentException
      */
-    public function testBaseQuery()
+    public function testBaseQuery(): void
     {
         $expectedSql = User::query()->toSql();
         $simpleSql = strtolower($this->repository->getBaseQueryString());
 
-        self::assertEquals($simpleSql, $expectedSql);
+        $this->assertEquals($simpleSql, $expectedSql);
     }
 
     /**
      * Test BelongsTo relation joining.
+     *
+     * @throws NotImplementedException
+     * @throws InvalidArgumentException
      */
-    public function testBelongsToJoin()
+    public function testBelongsToJoin(): void
     {
         $actualSql = strtolower($this->repository->getQueryStringWithJoin('role'));
         $expectedSql = User::query()->leftJoin('roles', 'users.role_id', '=', 'roles.id')->toSql();
 
-        self::assertEquals($expectedSql, $actualSql);
+        $this->assertEquals($expectedSql, $actualSql);
     }
 
     /**
      * Test HasMany relation joining.
+     *
+     * @throws NotImplementedException
+     * @throws InvalidArgumentException
      */
-    public function testHasManyJoin()
+    public function testHasManyJoin(): void
     {
         $actualSql = strtolower($this->repository->getQueryStringWithJoin('cars'));
         $expectedSql = User::query()->leftJoin('cars', 'cars.user_id', '=', 'users.id')->toSql();
 
-        self::assertEquals($expectedSql, $actualSql);
+        $this->assertEquals($expectedSql, $actualSql);
     }
 
     /**
      * Test HasOne relation joining.
+     *
+     * @throws NotImplementedException
+     * @throws InvalidArgumentException
      */
-    public function testHasOneJoin()
+    public function testHasOneJoin(): void
     {
         $actualSql = strtolower($this->repository->getQueryStringWithJoin('profile'));
         $expectedSql = User::query()->leftJoin('profiles', 'profiles.user_id', '=', 'users.id')->toSql();
 
-        self::assertEquals($expectedSql, $actualSql);
+        $this->assertEquals($expectedSql, $actualSql);
     }
 
     /**
      * Test HasManyThrough relation joining.
+     *
+     * @throws NotImplementedException
+     * @throws InvalidArgumentException
      */
-    public function testHasManyThroughJoin()
+    public function testHasManyThroughJoin(): void
     {
         $actualSql = strtolower($this->repository->getQueryStringWithJoin('supervisors'));
         $expectedSql = User::query()
@@ -99,13 +123,16 @@ class JoinRelationTest extends TestCase
             ->leftJoin('supervisors', 'supervisors_users.supervisor_id', '=', 'supervisors.id')
             ->toSql();
 
-        self::assertEquals($expectedSql, $actualSql);
+        $this->assertEquals($expectedSql, $actualSql);
     }
 
     /**
      * Test joining relations of relations.
+     *
+     * @throws NotImplementedException
+     * @throws InvalidArgumentException
      */
-    public function testNestedRelationsJoin()
+    public function testNestedRelationsJoin(): void
     {
         $actualSql = strtolower($this->repository->getQueryStringWithJoin('profile.phones'));
         $expectedSql = User::query()
@@ -113,13 +140,16 @@ class JoinRelationTest extends TestCase
             ->leftJoin('phones', 'phones.profile_id', '=', 'profiles.id')
             ->toSql();
 
-        self::assertEquals($expectedSql, $actualSql);
+        $this->assertEquals($expectedSql, $actualSql);
     }
 
     /**
      * Test of multiple relations joining.
+     *
+     * @throws NotImplementedException
+     * @throws InvalidArgumentException
      */
-    public function testMultipleRelationsJoin()
+    public function testMultipleRelationsJoin(): void
     {
         $actualSql = strtolower($this->repository->getQueryStringWithJoin(['profile', 'cars']));
         $expectedSql = User::query()
@@ -127,13 +157,16 @@ class JoinRelationTest extends TestCase
             ->leftJoin('cars', 'cars.user_id', '=', 'users.id')
             ->toSql();
 
-        self::assertEquals($expectedSql, $actualSql);
+        $this->assertEquals($expectedSql, $actualSql);
     }
 
     /**
      * Test that same relation joined only once.
+     *
+     * @throws NotImplementedException
+     * @throws InvalidArgumentException
      */
-    public function testSingleJoin()
+    public function testSingleJoin(): void
     {
         $actualSql = strtolower($this->repository->getQueryStringWithJoin(['profile.phones', 'profile']));
         $expectedSql = User::query()
@@ -141,7 +174,7 @@ class JoinRelationTest extends TestCase
             ->leftJoin('phones', 'phones.profile_id', '=', 'profiles.id')
             ->toSql();
 
-        self::assertEquals($expectedSql, $actualSql);
+        $this->assertEquals($expectedSql, $actualSql);
 
         $actualSql = strtolower($this->repository->getQueryStringWithJoin(['profile', 'profile.phones']));
         $expectedSql = User::query()
@@ -149,13 +182,15 @@ class JoinRelationTest extends TestCase
             ->leftJoin('phones', 'phones.profile_id', '=', 'profiles.id')
             ->toSql();
 
-        self::assertEquals($expectedSql, $actualSql);
+        $this->assertEquals($expectedSql, $actualSql);
     }
 
     /**
      * Test that unsupported relations types are throws valid exception.
+     *
+     * @throws NotImplementedException
      */
-    public function testUnsupportedJoin()
+    public function testUnsupportedJoin(): void
     {
         self::expectException(NotImplementedException::class);
         // Try to join polymorphic relation
@@ -164,8 +199,10 @@ class JoinRelationTest extends TestCase
 
     /**
      * Not declared in model relation method throws exception.
+     *
+     * @throws NotImplementedException
      */
-    public function testUnknownJoin()
+    public function testUnknownJoin(): void
     {
         self::expectException(RelationNotFoundException::class);
         $this->repository->getQueryStringWithJoin('potato');
@@ -256,6 +293,8 @@ class EntitiesRepository extends Repository
 {
     /**
      * Fake user records repository class. Has debug methods for performing tests.
+     *
+     * @throws RepositoryException
      */
     public function __construct()
     {
@@ -267,7 +306,7 @@ class EntitiesRepository extends Repository
      *
      * @return string
      */
-    public function getBaseQueryString()
+    public function getBaseQueryString(): string
     {
         return $this->query()->toSql();
     }
