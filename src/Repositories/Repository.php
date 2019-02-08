@@ -420,15 +420,6 @@ class Repository implements IRepository
                     $subQuery->whereNotIn($criterion->attribute, $criterion->value, $criterion->boolean);
                     break;
                 default:
-                    if ($criterion->value instanceof Carbon) {
-                        $subQuery->whereDate(
-                            $criterion->attribute,
-                            $criterion->operator,
-                            $criterion->value,
-                            $criterion->boolean
-                        );
-                        break;
-                    }
                     $subQuery->where(
                         $criterion->attribute,
                         $criterion->operator,
