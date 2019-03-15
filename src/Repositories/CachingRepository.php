@@ -7,13 +7,14 @@ use Illuminate\Contracts\Cache\Repository as CacheRepository;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
+use Psr\SimpleCache\InvalidArgumentException;
 use Saritasa\DingoApi\Paging\CursorRequest;
 use Saritasa\DingoApi\Paging\CursorResult;
 use Saritasa\DingoApi\Paging\PagingInfo;
+use Saritasa\LaravelRepositories\Contracts\IRepository;
 use Saritasa\LaravelRepositories\DTO\SortOptions;
 use Saritasa\LaravelRepositories\Exceptions\ModelNotFoundException;
 use Saritasa\LaravelRepositories\Exceptions\RepositoryException;
-use Saritasa\LaravelRepositories\Contracts\IRepository;
 
 /**
  * Wrapper for repositories to store data into cache.
@@ -194,6 +195,8 @@ class CachingRepository implements IRepository
      * @param string|int id Id to find
      *
      * @return Model|null
+     *
+     * @throws RepositoryException
      */
     private function find($id): ?Model
     {
@@ -224,6 +227,8 @@ class CachingRepository implements IRepository
      * @param Model $model Model to invalidate
      *
      * @return void
+     *
+     * @throws InvalidArgumentException
      */
     protected function invalidate(Model $model): void
     {
@@ -296,11 +301,11 @@ class CachingRepository implements IRepository
     /**
      * {@inheritdoc}
      */
-    public function count(): int
+    public function count(array $fieldValues = []): int
     {
         $key = $this->prefix . ":all:count";
-        return $this->cached($key, function () {
-            return $this->repository->count();
+        return $this->cached($key, function () use ($fieldValues) {
+            return $this->repository->count($fieldValues);
         });
     }
 

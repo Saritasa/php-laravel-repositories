@@ -5,10 +5,12 @@ namespace Saritasa\LaravelRepositories\Contracts;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
+use InvalidArgumentException;
 use Saritasa\DingoApi\Paging\CursorRequest;
 use Saritasa\DingoApi\Paging\CursorResult;
 use Saritasa\DingoApi\Paging\PagingInfo;
 use Saritasa\LaravelRepositories\DTO\SortOptions;
+use Saritasa\LaravelRepositories\Exceptions\BadCriteriaException;
 use Saritasa\LaravelRepositories\Exceptions\ModelNotFoundException;
 use Saritasa\LaravelRepositories\Exceptions\RepositoryException;
 
@@ -39,6 +41,7 @@ interface IRepository
      * @return Model
      *
      * @throws ModelNotFoundException
+     * @throws RepositoryException
      */
     public function findOrFail($id): Model;
 
@@ -46,7 +49,10 @@ interface IRepository
      * Returns first model matching given filters.
      *
      * @param array $fieldValues Filters collection
+     *
      * @return Model|null
+     *
+     * @throws BadCriteriaException
      */
     public function findWhere(array $fieldValues): ?Model;
 
@@ -54,6 +60,7 @@ interface IRepository
      * Create model in storage.
      *
      * @param Model $entity Model to create
+     *
      * @return Model
      *
      * @throws RepositoryException
@@ -75,6 +82,7 @@ interface IRepository
      * Delete model in storage.
      *
      * @param Model $entity Model to delete
+     *
      * @return void
      *
      * @throws RepositoryException
@@ -84,7 +92,7 @@ interface IRepository
     /**
      * Returns models list.
      *
-     * @return Collection
+     * @return Collection|Model[]
      */
     public function get(): Collection;
 
@@ -93,7 +101,9 @@ interface IRepository
      *
      * @param array $fieldValues Filters collection
      *
-     * @return Collection
+     * @return Collection|Model[]
+     *
+     * @throws BadCriteriaException
      */
     public function getWhere(array $fieldValues): Collection;
 
@@ -101,9 +111,12 @@ interface IRepository
      * Get models collection as pagination.
      *
      * @param PagingInfo $paging Paging information
-     * @param array|null $fieldValues Filters collection
+     * @param array $fieldValues Filters collection
      *
      * @return LengthAwarePaginator
+     *
+     * @throws BadCriteriaException
+     * @throws InvalidArgumentException
      */
     public function getPage(PagingInfo $paging, array $fieldValues = []): LengthAwarePaginator;
 
@@ -111,9 +124,11 @@ interface IRepository
      * Get models collection as cursor.
      *
      * @param CursorRequest $cursor Request with cursor data
-     * @param array|null $fieldValues Filters collection
+     * @param array $fieldValues Filters collection
      *
      * @return CursorResult
+     *
+     * @throws BadCriteriaException
      */
     public function getCursorPage(CursorRequest $cursor, array $fieldValues = []): CursorResult;
 
@@ -123,29 +138,35 @@ interface IRepository
      * @param array $with Which relations should be preloaded
      * @param array $withCounts Which related entities should be counted
      * @param array $fieldValues Conditions that retrieved entities should satisfy
-     * @param SortOptions $sortOptions How list of items should be sorted
+     * @param SortOptions|null $sortOptions How list of items should be sorted
      *
-     * @return Collection
+     * @return Collection|Model[]
+     *
+     * @throws BadCriteriaException
      */
     public function getWith(
         array $with,
         array $withCounts = [],
         array $fieldValues = [],
-        SortOptions $sortOptions = null
+        ?SortOptions $sortOptions = null
     ): Collection;
 
     /**
      * Return entities count.
      *
+     * @param array $fieldValues Conditions that retrieved entities should satisfy
+     *
      * @return integer
+     *
+     * @throws BadCriteriaException
      */
-    public function count(): int;
+    public function count(array $fieldValues = []): int;
 
     /**
      * List of fields, allowed to use in the search.
      * Should be determine in the inheritors. Determines the result of the list request of entities.
      *
-     * @return  array
+     * @return array
      */
     public function getSearchableFields(): array;
 }
