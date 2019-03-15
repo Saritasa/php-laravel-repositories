@@ -16,17 +16,30 @@ use Mockery\MockInterface;
 class Mocker
 {
     /**
-     * Mocks Connection and connection resolver for testing repositories and models.
+     * Mocks connection for testing repositories and models.
      *
-     * @return MockInterface|ConnectionResolverInterface
+     * @return MockInterface|ConnectionInterface
      */
-    public static function mockConnectionResolver(): MockInterface
+    public static function mockConnection(): MockInterface
     {
         $connectionMock = Mockery::mock(ConnectionInterface::class);
         $connectionMock->shouldReceive('getQueryGrammar')->andReturn(new Grammar());
         $connectionMock->shouldReceive('getPostProcessor')->andReturn(new Processor());
+
+        return $connectionMock;
+    }
+
+    /**
+     * Mocks connection resolver for testing repositories and models.
+     *
+     * @param ConnectionInterface $connection Connection to mock resolver
+     *
+     * @return MockInterface|ConnectionResolverInterface
+     */
+    public static function mockConnectionResolver(ConnectionInterface $connection): MockInterface
+    {
         $resolver = Mockery::mock(ConnectionResolver::class);
-        $resolver->shouldReceive('connection')->andReturn($connectionMock);
+        $resolver->shouldReceive('connection')->andReturn($connection);
 
         return $resolver;
     }

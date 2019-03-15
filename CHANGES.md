@@ -1,5 +1,16 @@
 # Changes History
 
+3.3.0
+------
++ Count method now can receive fieldValues array to filter results
++ Repository methods create/save/delete/ now can throw an exception if given model type don't match with served
+model by repository
++ Repository findOrFail method now checks compliance types of given value and served model primary key.
++ getPage and getCursorPage methods now use nested queries functionality as well as findWhere/getWhere/getWith
++ Method getWithBuilder marked as deprecated
++ Increased unit tests coverage
++ Fixed small description issues
+
 3.2.1
 ------
 + Methods getWith/findWhere/getWhere call when as value uses Carbon\Carbon instance and as key field name, now not throws BadCriteriaException.

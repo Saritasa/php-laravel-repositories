@@ -3,8 +3,8 @@
 namespace Saritasa\LaravelRepositories\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Saritasa\LaravelRepositories\DTO\SortOptions;
 use Saritasa\Exceptions\InvalidEnumValueException;
+use Saritasa\LaravelRepositories\DTO\SortOptions;
 use SebastianBergmann\RecursionContext\InvalidArgumentException;
 
 /**

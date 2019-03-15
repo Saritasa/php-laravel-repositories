@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\ModelNotFoundException as EloquentModelNotFountException;
 use Illuminate\Database\Eloquent\RelationNotFoundException;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -13,20 +14,19 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Collection;
 use Saritasa\DingoApi\Paging\CursorQueryBuilder;
 use Saritasa\DingoApi\Paging\CursorRequest;
 use Saritasa\DingoApi\Paging\CursorResult;
 use Saritasa\DingoApi\Paging\PagingInfo;
+use Saritasa\Exceptions\NotImplementedException;
+use Saritasa\LaravelRepositories\Contracts\IRepository;
 use Saritasa\LaravelRepositories\DTO\Criterion;
 use Saritasa\LaravelRepositories\DTO\SortOptions;
 use Saritasa\LaravelRepositories\Exceptions\BadCriteriaException;
 use Saritasa\LaravelRepositories\Exceptions\ModelNotFoundException;
-use Saritasa\Exceptions\NotImplementedException;
 use Saritasa\LaravelRepositories\Exceptions\RepositoryException;
-use Illuminate\Database\Query\Builder as QueryBuilder;
-use Saritasa\LaravelRepositories\Contracts\IRepository;
-use Illuminate\Database\Eloquent\ModelNotFoundException as EloquentModelNotFountException;
 use Throwable;
 
 /**
@@ -79,6 +79,13 @@ class Repository implements IRepository
     private $model;
 
     /**
+     * Validation rules for served by this repository entity.
+     *
+     * @var array
+     */
+    protected $validationRules = [];
+
+    /**
      * Superclass for any repository.
      * Contains logic of receipt the entity list, with filters (search) and sort.
      *
@@ -90,12 +97,12 @@ class Repository implements IRepository
     {
         $this->modelClass = $modelClass;
         try {
-            $this->model = new $this->modelClass;
+            $this->model = new $this->modelClass();
         } catch (Throwable $e) {
             throw new RepositoryException($this, "Error creating instance of model $this->modelClass", 500, $e);
         }
         if (!$this->model instanceof Model) {
-            throw new RepositoryException($this, "$this->modelClass must extend " . Model::class, 500);
+            throw new RepositoryException($this, "$this->modelClass must extend " . Model::class);
         }
     }
 
@@ -111,15 +118,23 @@ class Repository implements IRepository
         if (method_exists($this->model, 'getValidationRules')) {
             return $this->model->getValidationRules();
         }
-        if (isset($this->validationRules)) {
-            return $this->validationRules;
-        }
-        return [];
+
+        return $this->validationRules ?? [];
     }
 
     /** {@inheritdoc} */
     public function findOrFail($id): Model
     {
+        if (!is_numeric($id) && empty($id)) {
+            throw new RepositoryException($this, 'Provided id can not be empty.');
+        }
+
+        if (($this->model->getKeyType() === 'int' && !is_int($id)) ||
+            ($this->model->getKeyType() === 'string' && is_int($id))
+        ) {
+            throw new RepositoryException($this, 'Provided id type does not match model primary key type.');
+        }
+
         try {
             return $this->query()->findOrFail($id);
         } catch (EloquentModelNotFountException $exception) {
@@ -130,24 +145,32 @@ class Repository implements IRepository
     /** {@inheritdoc} */
     public function create(Model $model): Model
     {
+        $this->validateServedEntity($model);
+
         if (!$model->save()) {
             throw new RepositoryException($this, "Cannot create $this->modelClass record");
         }
+
         return $model;
     }
 
     /** {@inheritdoc} */
     public function save(Model $model): Model
     {
+        $this->validateServedEntity($model);
+
         if (!$model->save()) {
             throw new RepositoryException($this, "Cannot update $this->modelClass record");
         }
+
         return $model;
     }
 
     /** {@inheritdoc} */
     public function delete(Model $model): void
     {
+        $this->validateServedEntity($model);
+
         try {
             $result = $model->delete();
         } catch (Throwable $exception) {
@@ -167,14 +190,19 @@ class Repository implements IRepository
     /** {@inheritdoc} */
     public function getPage(PagingInfo $paging, array $fieldValues = []): LengthAwarePaginator
     {
-        $query = $this->query()->where($fieldValues);
-        return $query->paginate($paging->pageSize, ['*'], 'page', $paging->page);
+        $builder = $this->query();
+        $builder->addNestedWhereQuery($this->getNestedWhereConditions($builder->getQuery(), $fieldValues));
+
+        return $builder->paginate($paging->pageSize, ['*'], 'page', $paging->page);
     }
 
     /** {@inheritdoc} */
     public function getCursorPage(CursorRequest $cursor, array $fieldValues = []): CursorResult
     {
-        return $this->toCursorResult($cursor, $this->query()->where($fieldValues));
+        $builder = $this->query();
+        $builder->addNestedWhereQuery($this->getNestedWhereConditions($builder->getQuery(), $fieldValues));
+
+        return $this->toCursorResult($cursor, $builder);
     }
 
     /**
@@ -203,10 +231,11 @@ class Repository implements IRepository
     /**
      * Join eager loaded relation and get the related column name.
      *
-     * @param Builder|\Illuminate\Database\Query\Builder $query Query builder that should be appended with join clause
+     * @param Builder|QueryBuilder $query Query builder that should be appended with join clause
      * @param string|array $relations Relation name or array with relations names that should be joined
      *
-     * @return Builder|\Illuminate\Database\Query\Builder
+     * @return Builder|QueryBuilder
+     *
      * @throws NotImplementedException
      */
     protected function joinRelation($query, $relations)
@@ -244,7 +273,7 @@ class Repository implements IRepository
                         break;
                     case $relation instanceof BelongsTo && !$relation instanceof MorphTo:
                         $table = $relation->getRelated()->getTable();
-                        $foreign = $relation->getQualifiedForeignKey();
+                        $foreign = $relation->getQualifiedForeignKeyName();
                         $other = $relation->getQualifiedOwnerKeyName();
                         break;
                     default:
@@ -263,14 +292,14 @@ class Repository implements IRepository
     /**
      * Perform join query.
      *
-     * @param Builder|\Illuminate\Database\Query\Builder $query Query builder to apply joins
+     * @param Builder|QueryBuilder $query Query builder to apply joins
      * @param string $table Joined table
      * @param string $foreign Foreign key
      * @param string $other Other table key
      *
-     * @return Builder|\Illuminate\Database\Query\Builder
+     * @return Builder|QueryBuilder
      */
-    private function performJoin($query, $table, $foreign, $other)
+    private function performJoin($query, string $table, string $foreign, string $other)
     {
         // Check that table not joined yet
         $joins = [];
@@ -290,17 +319,19 @@ class Repository implements IRepository
      * ordered by requested rules.
      *
      * @param array $with Which relations should be preloaded
-     * @param array $withCounts Which related entities should be counted
-     * @param array $where Conditions that retrieved entities should satisfy
-     * @param SortOptions $sortOptions How list of item should be sorted
+     * @param array|null $withCounts Which related entities should be counted
+     * @param array|null $where Conditions that retrieved entities should satisfy
+     * @param SortOptions|null $sortOptions How list of item should be sorted
      *
      * @return Builder
+     *
+     * @deprecated This method unnecessary anymore and will be removed in next version
      */
     protected function getWithBuilder(
         array $with,
-        array $withCounts = null,
-        array $where = null,
-        SortOptions $sortOptions = null
+        ?array $withCounts = null,
+        ?array $where = null,
+        ?SortOptions $sortOptions = null
     ): Builder {
         return $this->query()
             ->when($with, function (Builder $query) use ($with) {
@@ -317,10 +348,17 @@ class Repository implements IRepository
             });
     }
 
-    /** {@inheritdoc} */
-    public function count(): int
+    /** {@inheritdoc}
+     */
+    public function count(array $where = []): int
     {
-        return $this->query()->count();
+        $builder = $this->query();
+
+        if (count($where)) {
+            $builder->addNestedWhereQuery($this->getNestedWhereConditions($builder->getQuery(), $where));
+        }
+
+        return $builder->count();
     }
 
     /** {@inheritdoc} */
@@ -331,8 +369,6 @@ class Repository implements IRepository
 
     /**
      * {@inheritdoc}
-     *
-     * @throws RepositoryException
      */
     public function getWith(
         array $with,
@@ -340,7 +376,14 @@ class Repository implements IRepository
         ?array $where = null,
         ?SortOptions $sortOptions = null
     ): Collection {
-        $builder = $this->getWithBuilder($with, $withCounts, null, $sortOptions);
+        $builder = $this->query()
+            ->with($with)
+            ->when($withCounts, function (Builder $query) use ($withCounts) {
+                return $query->withCount($withCounts);
+            })
+            ->when($sortOptions, function (Builder $query) use ($sortOptions) {
+                return $query->orderBy($sortOptions->orderBy, $sortOptions->sortOrder);
+            });
 
         if ($where) {
             $builder->addNestedWhereQuery($this->getNestedWhereConditions($builder->getQuery(), $where));
@@ -351,8 +394,6 @@ class Repository implements IRepository
 
     /**
      * {@inheritdoc}
-     *
-     * @throws RepositoryException
      */
     public function getWhere(array $fieldValues): Collection
     {
@@ -365,8 +406,6 @@ class Repository implements IRepository
 
     /**
      * {@inheritdoc}
-     *
-     * @throws RepositoryException
      */
     public function findWhere(array $fieldValues): ?Model
     {
@@ -466,5 +505,21 @@ class Repository implements IRepository
         return is_string($criterion->attribute) &&
             is_string($criterion->boolean) &&
             ($isMultipleOperator || $isSingleOperator);
+    }
+
+    /**
+     * Validates that provided entity can be served by this repository.
+     *
+     * @param Model $model Model to validate
+     *
+     * @return void
+     *
+     * @throws RepositoryException
+     */
+    protected function validateServedEntity(Model $model): void
+    {
+        if (!$model instanceof $this->modelClass) {
+            throw new RepositoryException($this, "This repository can serve only {$this->modelClass} entities.");
+        }
     }
 }

@@ -3,8 +3,8 @@
 namespace Saritasa\LaravelRepositories\DTO;
 
 use Saritasa\Dto;
-use Saritasa\LaravelRepositories\Enums\OrderDirections;
 use Saritasa\Exceptions\InvalidEnumValueException;
+use Saritasa\LaravelRepositories\Enums\OrderDirections;
 
 /**
  * The model contains the sort order direction and the field to sort by.
@@ -14,15 +14,15 @@ class SortOptions extends Dto
     /**
      * Order by attribute name.
      */
-    const ORDER_BY = 'orderBy';
+    public const ORDER_BY = 'orderBy';
 
     /**
      * Sort order attribute name;
      */
-    const SORT_ORDER = 'sortOrder';
+    public const SORT_ORDER = 'sortOrder';
 
     /**
-     * Create SortOptionsData model.
+     * The model contains the sort order direction and the field to sort by.
      *
      * @param string $orderBy Field name to sort records by
      * @param string $sortOrder Sort order direction (asc, desc)
@@ -48,6 +48,7 @@ class SortOptions extends Dto
      * Sort order direction.
      *
      * @see OrderDirections
+     *
      * @var string
      */
     public $sortOrder;

@@ -2,9 +2,10 @@
 
 namespace Saritasa\LaravelRepositories;
 
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\ServiceProvider;
-use Saritasa\LaravelRepositories\Repositories\RepositoryFactory;
 use Saritasa\LaravelRepositories\Contracts\IRepositoryFactory;
+use Saritasa\LaravelRepositories\Repositories\RepositoryFactory;
 
 /**
  * Package providers. Registers package implementation in DI container.
@@ -26,6 +27,8 @@ class LaravelRepositoriesServiceProvider extends ServiceProvider
      * Make package settings needed to correct work.
      *
      * @return void
+     *
+     * @throws BindingResolutionException
      */
     public function boot(): void
     {
@@ -45,6 +48,8 @@ class LaravelRepositoriesServiceProvider extends ServiceProvider
      * Register custom repositories implementations.
      *
      * @return void
+     *
+     * @throws BindingResolutionException
      */
     protected function registerCustomBindings(): void
     {
