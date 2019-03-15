@@ -53,7 +53,8 @@ class RepositoryFactoryTest extends TestCase
      */
     public function registerRepositoriesData(): array
     {
-        $modelObject = new class extends Model {};
+        $modelObject = new class extends Model {
+        };
 
         return [
             ['Not object class', Repository::class, true],
@@ -76,7 +77,8 @@ class RepositoryFactoryTest extends TestCase
     public function testThatEachTimeReturnsTheSameInstance(): void
     {
         $repositoryFactory = new RepositoryFactory();
-        $modelObject = new class extends Model {};
+        $modelObject = new class extends Model {
+        };
         $modelClass = get_class($modelObject);
         $repositoryFactory->register($modelClass, Repository::class);
         $firstInstance = $repositoryFactory->getRepository($modelClass);
