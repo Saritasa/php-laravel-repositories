@@ -3,9 +3,9 @@
 namespace Saritasa\LaravelRepositories\Repositories;
 
 use Illuminate\Database\Eloquent\Model;
-use Saritasa\LaravelRepositories\Exceptions\RepositoryException;
 use Saritasa\LaravelRepositories\Contracts\IRepository;
 use Saritasa\LaravelRepositories\Contracts\IRepositoryFactory;
+use Saritasa\LaravelRepositories\Exceptions\RepositoryException;
 use Saritasa\LaravelRepositories\Exceptions\RepositoryRegisterException;
 
 /**
@@ -33,6 +33,7 @@ class RepositoryFactory implements IRepositoryFactory
         if (empty($this->sharedInstances[$modelClass])) {
             $this->sharedInstances[$modelClass] = $this->build($modelClass);
         }
+
         return $this->sharedInstances[$modelClass];
     }
 
@@ -50,6 +51,7 @@ class RepositoryFactory implements IRepositoryFactory
         if (isset($this->registeredRepositories[$modelClass])) {
             return new $this->registeredRepositories[$modelClass]($modelClass);
         }
+
         return new Repository($modelClass);
     }
 
