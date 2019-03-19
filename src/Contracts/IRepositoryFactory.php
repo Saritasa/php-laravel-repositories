@@ -2,6 +2,7 @@
 
 namespace Saritasa\LaravelRepositories\Contracts;
 
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Saritasa\LaravelRepositories\Exceptions\RepositoryException;
 use Saritasa\LaravelRepositories\Exceptions\RepositoryRegisterException;
 
@@ -18,6 +19,7 @@ interface IRepositoryFactory
      * @return IRepository
      *
      * @throws RepositoryException
+     * @throws BindingResolutionException
      */
     public function getRepository(string $modelClass): IRepository;
 
