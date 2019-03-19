@@ -2,10 +2,11 @@
 
 namespace Saritasa\LaravelRepositories\Repositories;
 
+use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Contracts\Container\Container;
 use Illuminate\Database\Eloquent\Model;
 use Saritasa\LaravelRepositories\Contracts\IRepository;
 use Saritasa\LaravelRepositories\Contracts\IRepositoryFactory;
-use Saritasa\LaravelRepositories\Exceptions\RepositoryException;
 use Saritasa\LaravelRepositories\Exceptions\RepositoryRegisterException;
 
 /**
@@ -27,6 +28,24 @@ class RepositoryFactory implements IRepositoryFactory
      */
     protected $sharedInstances = [];
 
+    /**
+     * DI container instance.
+     *
+     * @var Container
+     */
+    protected $container;
+
+    /**
+     * Builds repositories for managing models.
+     *
+     * @param Container $container DI container instance
+     */
+    public function __construct(Container $container)
+    {
+        $this->container = $container;
+    }
+
+
     /** {@inheritdoc} */
     public function getRepository(string $modelClass): IRepository
     {
@@ -44,15 +63,20 @@ class RepositoryFactory implements IRepositoryFactory
      *
      * @return IRepository
      *
-     * @throws RepositoryException
+     * @throws BindingResolutionException
      */
     protected function build(string $modelClass): IRepository
     {
-        if (isset($this->registeredRepositories[$modelClass])) {
-            return new $this->registeredRepositories[$modelClass]($modelClass);
+        $repositoryClass = $this->registeredRepositories[$modelClass] ?? Repository::class;
+
+        $parameters = [];
+
+        if ($repositoryClass === Repository::class || is_subclass_of($repositoryClass, Repository::class)
+        ) {
+            $parameters = ['modelClass' => $modelClass];
         }
 
-        return new Repository($modelClass);
+        return $this->container->make($repositoryClass, $parameters);
     }
 
     /** {@inheritdoc} */

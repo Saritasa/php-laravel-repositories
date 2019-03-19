@@ -2,8 +2,13 @@
 
 namespace Saritasa\LaravelRepositories\Tests;
 
+use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Contracts\Container\Container;
 use Illuminate\Database\Eloquent\Model;
+use Mockery;
+use Mockery\MockInterface;
 use PHPUnit\Framework\TestCase;
+use Saritasa\LaravelRepositories\Contracts\IRepository;
 use Saritasa\LaravelRepositories\Exceptions\RepositoryException;
 use Saritasa\LaravelRepositories\Exceptions\RepositoryRegisterException;
 use Saritasa\LaravelRepositories\Repositories\Repository;
@@ -15,6 +20,24 @@ use SebastianBergmann\RecursionContext\InvalidArgumentException;
  */
 class RepositoryFactoryTest extends TestCase
 {
+    /**
+     * Connection instance mock.
+     *
+     * @var Container|MockInterface
+     */
+    protected $container;
+
+    /**
+     * Setup tests setting.
+     *
+     * @return void
+     */
+    public function setUp(): void
+    {
+        parent::setUp();
+        $this->container = Mockery::mock(Container::class);
+    }
+
     /**
      * Test register custom repositories for model with different cases.
      *
@@ -29,10 +52,11 @@ class RepositoryFactoryTest extends TestCase
      * @throws RepositoryRegisterException
      * @throws RepositoryException
      * @throws InvalidArgumentException
+     * @throws BindingResolutionException
      */
     public function testRegisterCustomRepositories(string $model, string $repository, bool $expectException): void
     {
-        $repositoryFactory = new RepositoryFactory();
+        $repositoryFactory = new RepositoryFactory($this->container);
 
         if ($expectException) {
             $this->expectException(RepositoryRegisterException::class);
@@ -41,8 +65,10 @@ class RepositoryFactoryTest extends TestCase
         $repositoryFactory->register($model, $repository);
 
         if (!$expectException) {
+            $expectedSRepository = Mockery::mock($repository);
+            $this->container->shouldReceive('make')->andReturn($expectedSRepository);
             $actualRepositoryInstance = $repositoryFactory->getRepository($model);
-            $this->assertEquals($repository, get_class($actualRepositoryInstance));
+            $this->assertSame($expectedSRepository, $actualRepositoryInstance);
         }
     }
 
@@ -73,13 +99,15 @@ class RepositoryFactoryTest extends TestCase
      * @throws RepositoryRegisterException
      * @throws RepositoryException
      * @throws InvalidArgumentException
+     * @throws BindingResolutionException
      */
     public function testThatEachTimeReturnsTheSameInstance(): void
     {
-        $repositoryFactory = new RepositoryFactory();
+        $repositoryFactory = new RepositoryFactory($this->container);
         $modelObject = new class extends Model {
         };
         $modelClass = get_class($modelObject);
+        $this->container->shouldReceive('make')->andReturn(Mockery::mock(IRepository::class));
         $repositoryFactory->register($modelClass, Repository::class);
         $firstInstance = $repositoryFactory->getRepository($modelClass);
         $secondInstance = $repositoryFactory->getRepository($modelClass);
