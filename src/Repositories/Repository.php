@@ -431,24 +431,31 @@ class Repository implements IRepository
         $subQuery = $builder->forNestedWhere();
         foreach ($criteria as $key => $criterionData) {
             switch (true) {
+                case $criterionData instanceof Criterion:
+                    $criterion = $criterionData;
+                    break;
                 case is_string($key)
                     && ((!is_array($criterionData) && !is_object($criterionData))
                         || $criterionData instanceof Carbon):
                     $criterion = new Criterion([Criterion::ATTRIBUTE => $key, Criterion::VALUE => $criterionData]);
                     break;
-                case $criterionData instanceof Criterion:
-                    $criterion = $criterionData;
-                    break;
-                case is_int($key) && is_array($criterionData) && !empty($criterionData):
-                    $criterion = $this->parseCriterion($criterionData);
-                    break;
+                case is_int($key) && is_array($criterionData) && $this->isNestedCriteria($criterionData):
+                    $boolean = 'and';
+                    if (isset($criterionData[Criterion::BOOLEAN])) {
+                        $boolean = $criterionData[Criterion::BOOLEAN];
+                        unset($criterionData[Criterion::BOOLEAN]);
+                    }
+                    $subQuery->addNestedWhereQuery(
+                        $this->getNestedWhereConditions($subQuery, $criterionData),
+                        $boolean
+                    );
+                    continue 2;
                 default:
-                    throw new BadCriteriaException($this);
+                    $criterion = $this->parseCriterion($criterionData);
             }
 
             if (!$this->isCriterionValid($criterion)) {
-                $subQuery->addNestedWhereQuery($this->getNestedWhereConditions($subQuery, $criterionData));
-                continue;
+                throw new BadCriteriaException($this);
             }
 
             switch ($criterion->operator) {
@@ -470,6 +477,28 @@ class Repository implements IRepository
         }
 
         return $subQuery;
+    }
+
+    /**
+     * Shows whether given criterion data is nested.
+     *
+     * @param array $criterionData Criterion data to check
+     *
+     * @return boolean
+     */
+    protected function isNestedCriteria(array $criterionData): bool
+    {
+        $isValid = true;
+
+        foreach ($criterionData as $key => $possibleCriterion) {
+            $isValid = $isValid &&
+                (
+                    (is_int($key) && is_array($possibleCriterion)) ||
+                    ($key === Criterion::BOOLEAN && in_array($possibleCriterion, ['and', 'or']))
+                );
+        }
+
+        return $isValid;
     }
 
     /**
