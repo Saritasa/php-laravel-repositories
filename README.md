@@ -9,7 +9,7 @@
   
 Implementation of Repository pattern for Laravel (on top of Eloquent)  
   
-## Laravel 5.5  
+## Laravel 5.5+
   
 Install the ```saritasa/laravel-repositories``` package:  
   
@@ -17,83 +17,129 @@ Install the ```saritasa/laravel-repositories``` package:
 $ composer require saritasa/laravel-repositories  
 ```  
 ## Configuration
-### Publish file
-To publish configuration file you can run next command:
+- Publish configuration file:
+
 ```bash
 php artisan vendor:publish --tag=laravel_repositories
 ```
-It will copy file laravel_repositories.php in config directory.
-### Register custom repositories implementaion
-To register your own IRepository impelementaion you can put it into configuration file, like:
+
+- Register custom repositories implementation:  
 ```php
 return [
-	'bindings' => [\App\Models\User::class => \App\Repositories\UserRepository::class,],
+	'bindings' => [
+	    \App\Models\User::class => \App\Repositories\UserRepository::class,
+	],
 ];
 ```
-NOTE: Just remember that default IRepositoryFactory implementation can work only with classes extended from Repository. If you want change this behavior you should add your own implementation.
-## Available classes  
-  
-### RepositoryFactory  
-Base iRepositoryFactory implementation. You can register IRepository implementation to some model. In when you will be getting repository for this model - you will receive this registered object.  
-  
-**Example**  
-```php   
- $repositoryFactory = app(IRepositoryFactory::class);  
- $repositoryFactory->register(User::class, Repository::class);```  
-*Your repository must implement IRepository contract and receive string $modelClass in constructor.*
-  
-### Repository  
-Repository class implements **IRepository** interface. Contains helper methods to build query for SQL-like storages.  
-Has protected method to join tables by Eloquent model relation name.  
-Supported relations are: **BelongsToMany**, **HasOne**, **HasMany**, **BelongsTo**  
-Nested relations supported.  
-  
-**Example**  
-  
-For method  
-  
-```php  
-public function getUsersList(): Collection  
-{  
- $query = $this->query();  
- $this->joinRelation($query, ['role', 'profile', 'cars', 'profile.phones']);  
- return $query;}  
+*Note: Your custom repository must implement `IRepository` contract.*
+
+## Getting repository inside your code
+To get specific repository in your code you can just build with DI container repositories factory and then
+build needed for your repository in this factory.  
+ **Example:**
+```php
+    $repositoryFactory = app(\Saritasa\LaravelRepositories\Repositories\IRepositoryFactory::class);
+    $userRepository = $repositoryFactory->getRepository(\App\Models\User::class);
+```
+## Filtering results with repository
+Methods findWhere/getWhere/getWith/getPage/getCursorPage/count/ can receive criteria as params 
+Here the examples of available syntax:
+- Criterion without operator:
+```php
+    $criteria = [
+        'field1' => 'value1',
+        'field2' => 1,
+    ];
 ```  
-  
-result query will be  
-  
-```SQL  
-SELECT *  
-FROM "users"  
- LEFT JOIN "roles" ON "users"."role_id" = "roles"."id" LEFT JOIN "profiles" ON "profiles"."user_id" = "users"."id" LEFT JOIN "cars" ON "cars"."user_id" = "users"."id" LEFT JOIN "phones" ON "phones"."profile_id" = "profiles"."id"```  
-**Repository** has **getWith()** method that allows to retrieve list of entities with   
+*In this case `=` operator and `and` boolean between them will be used.*  
+**Example:** `... 'field1 = 'value1' and 'field2' = 1 ...`
+- Criterion with operator:
+```php
+    $criteria = [
+        ['field1', '<>', 'value1'],
+        ['field2', '>', 1, 'or'],
+        ['field3', 'in', [1, 2]],
+        ['field4', 'not in', new \Illuminate\Support\Collection([1, 2])],
+    ];
+```  
+**`Important:` arrays and collection can be used only with `in` and `not in` operators.**  
+*Note: As 4th parameter you can pass boolean `or`/`and` (`and` uses by default).
+But you should remember that boolean used between current and previous criterion*    
+**Example:** `... 'field1 <> 'value1' or 'field2' > 1 and 'field3' in (1, 2) and 'field4' not in (1, 2) ...`  
+- Criterion as DTO:
+```php
+    $criteria = [
+            new Criterion([
+                Criterion::OPERATOR => '<>',
+                Criterion::VALUE => 'value1',
+                Criterion::ATTRIBUTE => 'field1',
+            ]),
+            new Criterion([
+                Criterion::OPERATOR => '>',
+                Criterion::VALUE => 1,
+                Criterion::ATTRIBUTE => 'field2',
+                Criterion::BOOLEAN => 'or',
+            ]),
+            new Criterion([
+                Criterion::OPERATOR => 'in',
+                Criterion::VALUE => [1, 2],
+                Criterion::ATTRIBUTE => 'field3',
+            ]),   
+            new Criterion([
+                Criterion::OPERATOR => 'not in',
+                Criterion::VALUE => [1, 2],
+                Criterion::ATTRIBUTE => 'field4',
+            ]),                     
+    ];
+```
+Result will be the same as in previous example.
+- Nested criteria:  
+You can group different conditions that gives flexibility in getting data from repository  
+```php
+    $criteria = [
+        [
+            ['field1', '<>', 'value1'],
+            ['field2', '>', 1, 'or'],
+        ],
+        [
+            ['field3', 'in', [1, 2]],
+            ['field4', 'not in', [1, 2],
+            'boolean' => 'or',
+        ],
+    ];
+```
+*Note: you can add nesting level in any depth what you want. To use `or` condition between one group
+and other(group and non-group condition) you can pass 'boolean' parameter in the same level as other conditions.*
+
+**Example:**`... ('field1 <> 'value1' or 'field2' > 1) or ('field3' in (1, 2) and 'field4' not in (1, 2)) ...`  
+## Preload model relations
+Method **getWith()** method allows to retrieve list of entities with   
 eager loaded related models and related models counts. Also allows to filter this list by given criteria   
 and sort in requested order.  
   
 **Example**:  
 ```php  
-$usersRepository->getWith(['role', 'supervisors'], ['phones'], [['age', '>', 21]], $sortOptions)  
-  
-// Retrieves list of users which age greater than 21. // Each user will be retrieved with pre-loaded role and supervisors models.  
-// List of users will be ordered by requested sort options (SortOptions::class object)  
+$usersRepository->getWith(
+    ['role', 'supervisors'],
+    ['phones'],
+    [],
+    new Saritasa\LaravelRepositories\DTO\SortOptions('name', 'DESC')
+);
 ```  
+- Each user will be retrieved with pre-loaded role and supervisors models.
+- Each user will be retrieved with pre-loaded phones relation count.
+- List of users will be ordered by requested sort options.  
   
-### SortOptions  
-DTO that allows to pass sort options to repository. Contains sort order field   
-and sort order direction that should be one of **OrderDirections** enum value.  
-  
-## Exceptions  
+## Exceptions
 ### Repository Exception  
-Base exception for repository layer.  
+Base exception for repository layer.
+### Repository register exception
+Throws when can not register custom repository.
 ### Model not found Exception  
 Throws in case when some model not exists in storage.  
-  
-**Example**:  
-```php  
-function findWhere(array $fieldValues) {  
- if (!count($fieldValues)) { new RepositoryException($this, "No search criteria provided"); } // ...}  
-```  
-  
+### Bad Criteria Exception
+Throws when provided criteria has incorrect format at least in one criterion inside.
+
 ## Contributing  
   
 1. Create fork, checkout it  
