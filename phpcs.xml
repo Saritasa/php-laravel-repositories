@@ -18,7 +18,9 @@
     <rule ref="Generic.Commenting.DocComment.SpacingBeforeTags" />
     <rule ref="MySource.Commenting.FunctionComment.InvalidReturn" />
     <rule ref="MySource.Commenting.FunctionComment.MissingParamComment" />
-    <rule ref="MySource.Commenting.FunctionComment.TypeHintMissing" />
+    <rule ref="MySource.Commenting.FunctionComment.TypeHintMissing">
+        <exclude-pattern>/src/Repositories/Repository.php</exclude-pattern>
+    </rule>
     <rule ref="Generic.Arrays.DisallowLongArraySyntax" />
     <rule ref="Generic.Classes.DuplicateClassName" />
     <rule ref="Generic.CodeAnalysis.EmptyStatement" />

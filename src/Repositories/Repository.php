@@ -223,7 +223,7 @@ class Repository implements IRepository
      *
      * @return Builder
      */
-    protected function query(): Builder
+    protected function query()
     {
         return $this->model->query();
     }
@@ -426,7 +426,7 @@ class Repository implements IRepository
      *
      * @throws BadCriteriaException when any criterion is not valid
      */
-    protected function getNestedWhereConditions(QueryBuilder $builder, array $criteria): QueryBuilder
+    protected function getNestedWhereConditions($builder, array $criteria)
     {
         $subQuery = $builder->forNestedWhere();
         foreach ($criteria as $key => $criterionData) {
