@@ -1,5 +1,11 @@
 # Changes History
 
+3.4.0
+------
++ Remove TypeHinting in Repository to make compatibility with other DB
++ Use container resolver for dependencies into repositories factory
++ Add ability to use 'or' statement between filter groups
+
 3.3.0
 ------
 + Count method now can receive fieldValues array to filter results
