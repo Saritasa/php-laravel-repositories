@@ -188,18 +188,32 @@ class Repository implements IRepository
     }
 
     /** {@inheritdoc} */
-    public function getPage(PagingInfo $paging, array $fieldValues = []): LengthAwarePaginator
-    {
-        $builder = $this->query();
+    public function getPage(
+        PagingInfo $paging,
+        array $fieldValues = [],
+        ?SortOptions $sortOptions = null
+    ): LengthAwarePaginator {
+        $builder = $this
+            ->query()
+            ->when($sortOptions, function (Builder $query) use ($sortOptions) {
+                return $query->orderBy($sortOptions->orderBy, $sortOptions->sortOrder);
+            });
         $builder->addNestedWhereQuery($this->getNestedWhereConditions($builder->getQuery(), $fieldValues));
 
         return $builder->paginate($paging->pageSize, ['*'], 'page', $paging->page);
     }
 
     /** {@inheritdoc} */
-    public function getCursorPage(CursorRequest $cursor, array $fieldValues = []): CursorResult
-    {
-        $builder = $this->query();
+    public function getCursorPage(
+        CursorRequest $cursor,
+        array $fieldValues = [],
+        ?SortOptions $sortOptions = null
+    ): CursorResult {
+        $builder = $this
+            ->query()
+            ->when($sortOptions, function (Builder $query) use ($sortOptions) {
+                return $query->orderBy($sortOptions->orderBy, $sortOptions->sortOrder);
+            });
         $builder->addNestedWhereQuery($this->getNestedWhereConditions($builder->getQuery(), $fieldValues));
 
         return $this->toCursorResult($cursor, $builder);

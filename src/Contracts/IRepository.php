@@ -112,25 +112,35 @@ interface IRepository
      *
      * @param PagingInfo $paging Paging information
      * @param array $fieldValues Filters collection
+     * @param SortOptions|null $sortOptions How list of items should be sorted
      *
      * @return LengthAwarePaginator
      *
      * @throws BadCriteriaException
      * @throws InvalidArgumentException
      */
-    public function getPage(PagingInfo $paging, array $fieldValues = []): LengthAwarePaginator;
+    public function getPage(
+        PagingInfo $paging,
+        array $fieldValues = [],
+        ?SortOptions $sortOptions = null
+    ): LengthAwarePaginator;
 
     /**
      * Get models collection as cursor.
      *
      * @param CursorRequest $cursor Request with cursor data
      * @param array $fieldValues Filters collection
+     * @param SortOptions|null $sortOptions How list of items should be sorted
      *
      * @return CursorResult
      *
      * @throws BadCriteriaException
      */
-    public function getCursorPage(CursorRequest $cursor, array $fieldValues = []): CursorResult;
+    public function getCursorPage(
+        CursorRequest $cursor,
+        array $fieldValues = [],
+        ?SortOptions $sortOptions = null
+    ): CursorResult;
 
     /**
      * Retrieve list of entities that satisfied requested conditions.
