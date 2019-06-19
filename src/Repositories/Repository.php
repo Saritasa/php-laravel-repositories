@@ -529,7 +529,8 @@ class Repository implements IRepository
     {
         $isMultipleOperator = (is_array($criterion->value) || $criterion->value instanceof Collection) &&
             in_array($criterion->operator, $this->multipleOperators);
-        $isSingleOperator = is_string($criterion->value) && in_array(strtolower($criterion->operator), $this->singleOperators);
+        $isSingleOperator = !is_array($criterion->value) &&
+            in_array(strtolower($criterion->operator), $this->singleOperators);
 
         return is_string($criterion->attribute) &&
             is_string($criterion->boolean) &&
