@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Collection;
 use Saritasa\DingoApi\Paging\CursorQueryBuilder;
@@ -23,6 +24,7 @@ use Saritasa\DingoApi\Paging\PagingInfo;
 use Saritasa\Exceptions\NotImplementedException;
 use Saritasa\LaravelRepositories\Contracts\IRepository;
 use Saritasa\LaravelRepositories\DTO\Criterion;
+use Saritasa\LaravelRepositories\DTO\RelationCriterion;
 use Saritasa\LaravelRepositories\DTO\SortOptions;
 use Saritasa\LaravelRepositories\Exceptions\BadCriteriaException;
 use Saritasa\LaravelRepositories\Exceptions\ModelNotFoundException;
@@ -445,6 +447,29 @@ class Repository implements IRepository
         $subQuery = $builder->forNestedWhere();
         foreach ($criteria as $key => $criterionData) {
             switch (true) {
+                case $criterionData instanceof RelationCriterion:
+                    if (!method_exists($this->model, $criterionData->relation)) {
+                        throw new BadCriteriaException($this);
+                    }
+
+                    /**
+                     * Target relation to check existence.
+                     *
+                     * @var Relation $relation
+                     */
+                    $relation = $this->model->{$criterionData->relation}();
+
+                    $relationQuery = $relation->getRelationExistenceQuery(
+                        $relation->getRelated()->newQueryWithoutRelationships(),
+                        $relation->getParent()->newQuery()
+                    );
+
+                    $relationQuery->addNestedWhereQuery(
+                        $this->getNestedWhereConditions($relationQuery->getQuery(), $criterionData->criteria)
+                    );
+
+                    $subQuery->addWhereExistsQuery($relationQuery->toBase(), $criterionData->boolean);
+                    continue 2;
                 case $criterionData instanceof Criterion:
                     $criterion = $criterionData;
                     break;
@@ -472,11 +497,13 @@ class Repository implements IRepository
                 throw new BadCriteriaException($this);
             }
 
-            switch ($criterion->operator) {
-                case 'in':
+            switch (true) {
+                case $criterion instanceof RelationCriterion:
+                    break;
+                case $criterion->operator === 'in':
                     $subQuery->whereIn($criterion->attribute, $criterion->value, $criterion->boolean);
                     break;
-                case 'not in':
+                case $criterion->operator === 'not in':
                     $subQuery->whereNotIn($criterion->attribute, $criterion->value, $criterion->boolean);
                     break;
                 default:
