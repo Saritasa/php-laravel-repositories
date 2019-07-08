@@ -116,13 +116,7 @@ and other(group and non-group condition) you can pass 'boolean' parameter in the
 You can build queries to check on existence any model relations
 ```php
     $criteria = [
-        new RelationCriterion([
-            RelationCriterion::RELATION => 'roles',
-            RelationCriterion::CRITERIA => [
-                ['slug', 'in', [1, 2]],
-            ],
-            RelationCriterion::BOOLEAN => 'or',
-        ]), 
+        new RelationCriterion('roles', [['slug', 'in', [1, 2]]], 'or'), 
     ];
 ```
 

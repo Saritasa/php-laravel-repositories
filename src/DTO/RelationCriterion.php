@@ -10,9 +10,6 @@ namespace Saritasa\LaravelRepositories\DTO;
  */
 class RelationCriterion extends Criterion
 {
-    public const RELATION = 'relation';
-    public const CRITERIA = 'criteria';
-
     /**
      * Relation name.
      *
@@ -26,4 +23,19 @@ class RelationCriterion extends Criterion
      * @var Criterion[]
      */
     protected $criteria = [];
+
+    /**
+     * Criterion to check on existence model relation.
+     *
+     * @param string $relation Relation name
+     * @param Criterion[] $criteria Criteria to filter relation
+     * @param string $boolean Relation with criteria on same level
+     */
+    public function __construct(string $relation, array $criteria, string $boolean = 'and')
+    {
+        parent::__construct([static::BOOLEAN => $boolean]);
+
+        $this->relation = $relation;
+        $this->criteria = $criteria;
+    }
 }
