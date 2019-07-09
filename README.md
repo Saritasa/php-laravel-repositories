@@ -112,6 +112,14 @@ You can group different conditions that gives flexibility in getting data from r
 and other(group and non-group condition) you can pass 'boolean' parameter in the same level as other conditions.*
 
 **Example:**`... ('field1 <> 'value1' or 'field2' > 1) or ('field3' in (1, 2) and 'field4' not in (1, 2)) ...`  
+- Relation existence criterion:  
+You can build queries to check on existence any model relations
+```php
+    $criteria = [
+        new RelationCriterion('roles', [['slug', 'in', [1, 2]]], 'or'), 
+    ];
+```
+
 ## Preload model relations
 Method **getWith()** method allows to retrieve list of entities with   
 eager loaded related models and related models counts. Also allows to filter this list by given criteria   
