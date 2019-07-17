@@ -10,7 +10,7 @@ use Mockery\MockInterface;
 use PHPUnit\Framework\TestCase;
 use Saritasa\LaravelRepositories\DTO\Criterion;
 use Saritasa\LaravelRepositories\Exceptions\RepositoryException;
-use Saritasa\LaravelRepositories\Repositories\Repository;
+use Saritasa\LaravelRepositories\Repositories\Adapters\EloquentAdapterRepository;
 
 /**
  * Tests of repository correct building nested queries.
@@ -20,7 +20,7 @@ class NestedQueryBuilderTest extends TestCase
     /**
      * Tested repository.
      *
-     * @var MockInterface|Repository
+     * @var MockInterface|EloquentAdapterRepository
      */
     protected $repositoryMock;
 
@@ -48,7 +48,7 @@ class NestedQueryBuilderTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
-        $this->repositoryMock = Mockery::mock(Repository::class)
+        $this->repositoryMock = Mockery::mock(EloquentAdapterRepository::class)
             ->shouldAllowMockingProtectedMethods()
             ->makePartial();
         $this->queryMock = Mockery::mock(QueryBuilder::class);
@@ -105,6 +105,7 @@ class NestedQueryBuilderTest extends TestCase
         $this->builder->shouldReceive('addNestedWhereQuery')->withArgs([$nestedQueryMock])
             ->andReturnSelf();
         $this->builder->shouldReceive('first')->andReturnNull();
+        $this->builder->shouldReceive('when')->andReturnSelf();
         $this->repositoryMock->findWhere([
             'field1' => 'value1',
             ['field2', '<>', false],

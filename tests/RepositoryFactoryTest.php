@@ -4,14 +4,14 @@ namespace Saritasa\LaravelRepositories\Tests;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Container\Container;
-use Illuminate\Database\Eloquent\Model;
 use Mockery;
 use Mockery\MockInterface;
 use PHPUnit\Framework\TestCase;
 use Saritasa\LaravelRepositories\Contracts\IRepository;
+use Saritasa\LaravelRepositories\Entities\EloquentEntity;
 use Saritasa\LaravelRepositories\Exceptions\RepositoryException;
 use Saritasa\LaravelRepositories\Exceptions\RepositoryRegisterException;
-use Saritasa\LaravelRepositories\Repositories\Repository;
+use Saritasa\LaravelRepositories\Repositories\Adapters\EloquentAdapterRepository;
 use Saritasa\LaravelRepositories\Repositories\RepositoryFactory;
 use SebastianBergmann\RecursionContext\InvalidArgumentException;
 
@@ -79,15 +79,15 @@ class RepositoryFactoryTest extends TestCase
      */
     public function registerRepositoriesData(): array
     {
-        $modelObject = new class extends Model {
+        $modelObject = new class extends EloquentEntity {
         };
 
         return [
-            ['Not object class', Repository::class, true],
-            [Repository::class, Repository::class, true],
+            ['Not object class', EloquentAdapterRepository::class, true],
+            [EloquentAdapterRepository::class, EloquentAdapterRepository::class, true],
             [get_class($modelObject), 'Not existing repository', true],
             [get_class($modelObject), get_class($modelObject), true],
-            [get_class($modelObject), Repository::class, false],
+            [get_class($modelObject), EloquentAdapterRepository::class, false],
         ];
     }
 
@@ -104,11 +104,11 @@ class RepositoryFactoryTest extends TestCase
     public function testThatEachTimeReturnsTheSameInstance(): void
     {
         $repositoryFactory = new RepositoryFactory($this->container);
-        $modelObject = new class extends Model {
+        $modelObject = new class extends EloquentEntity {
         };
         $modelClass = get_class($modelObject);
         $this->container->shouldReceive('make')->andReturn(Mockery::mock(IRepository::class));
-        $repositoryFactory->register($modelClass, Repository::class);
+        $repositoryFactory->register($modelClass, EloquentAdapterRepository::class);
         $firstInstance = $repositoryFactory->getRepository($modelClass);
         $secondInstance = $repositoryFactory->getRepository($modelClass);
 

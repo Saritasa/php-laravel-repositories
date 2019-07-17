@@ -19,7 +19,7 @@
     <rule ref="MySource.Commenting.FunctionComment.InvalidReturn" />
     <rule ref="MySource.Commenting.FunctionComment.MissingParamComment" />
     <rule ref="MySource.Commenting.FunctionComment.TypeHintMissing">
-        <exclude-pattern>/src/Repositories/Repository.php</exclude-pattern>
+        <exclude-pattern>/src/Repositories/Adapters/EloquentAdapterRepository.php</exclude-pattern>
     </rule>
     <rule ref="Generic.Arrays.DisallowLongArraySyntax" />
     <rule ref="Generic.Classes.DuplicateClassName" />
@@ -28,7 +28,10 @@
     <rule ref="Generic.CodeAnalysis.JumbledIncrementer" />
     <rule ref="Generic.CodeAnalysis.UnconditionalIfStatement" />
     <rule ref="Generic.CodeAnalysis.UnnecessaryFinalModifier" />
-    <rule ref="Generic.CodeAnalysis.UnusedFunctionParameter"/>
+    <rule ref="Generic.CodeAnalysis.UnusedFunctionParameter">
+        <exclude-pattern>/src/Repositories/CachingRepository.php</exclude-pattern>
+    </rule>
+    </rule>
     <rule ref="Generic.CodeAnalysis.UselessOverridingMethod" />
     <rule ref="Generic.Commenting.Fixme" />
     <rule ref="Generic.Commenting.Todo" />

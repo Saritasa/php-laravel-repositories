@@ -3,7 +3,6 @@
 namespace Saritasa\LaravelRepositories\Contracts;
 
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
 use Saritasa\DingoApi\Paging\CursorRequest;
@@ -24,91 +23,79 @@ interface IRepository
      *
      * @return string
      */
-    public function getModelClass(): string;
+    public function getEntityClass(): string;
 
     /**
-     * Returns rules to validate model which managed by this repository.
+     * Find entity by their id.
      *
-     * @return array
-     */
-    public function getModelValidationRules(): array;
-
-    /**
-     * Find model by their id.
+     * @param string|int $id Entity id to find
      *
-     * @param string|int $id Model id to find
-     *
-     * @return Model
+     * @return IEntity
      *
      * @throws ModelNotFoundException
      * @throws RepositoryException
      */
-    public function findOrFail($id): Model;
+    public function findOrFail($id): IEntity;
 
     /**
-     * Returns first model matching given filters.
+     * Returns first entity matching given filters.
      *
      * @param array $fieldValues Filters collection
+     * @param SortOptions|null $sortOptions How list of items should be sorted
      *
-     * @return Model|null
+     * @return IEntity|null
      *
      * @throws BadCriteriaException
      */
-    public function findWhere(array $fieldValues): ?Model;
+    public function findWhere(array $fieldValues, ?SortOptions $sortOptions = null): ?IEntity;
 
     /**
-     * Create model in storage.
+     * Create entity in storage.
      *
-     * @param Model $entity Model to create
+     * @param IEntity $entity Entity to create
      *
-     * @return Model
+     * @return IEntity
      *
      * @throws RepositoryException
      */
-    public function create(Model $entity): Model;
+    public function create(IEntity $entity): IEntity;
 
     /**
-     * Save model in storage.
+     * Save entity in storage.
      *
-     * @param Model $entity Model to save
+     * @param IEntity $entity Entity to save
      *
-     * @return Model
+     * @return IEntity
      *
      * @throws RepositoryException
      */
-    public function save(Model $entity): Model;
+    public function save(IEntity $entity): IEntity;
 
     /**
-     * Delete model in storage.
+     * Delete entity in storage.
      *
-     * @param Model $entity Model to delete
+     * @param IEntity $entity Entity to delete
      *
      * @return void
      *
      * @throws RepositoryException
      */
-    public function delete(Model $entity): void;
+    public function delete(IEntity $entity): void;
 
     /**
-     * Returns models list.
-     *
-     * @return Collection|Model[]
-     */
-    public function get(): Collection;
-
-    /**
-     * Returns models list matching given filters.
+     * Returns entities list.
      *
      * @param array $fieldValues Filters collection
+     * @param SortOptions|null $sortOptions How list of items should be sorted
      *
-     * @return Collection|Model[]
+     * @return Collection|IEntity[]
      *
      * @throws BadCriteriaException
      */
-    public function getWhere(array $fieldValues): Collection;
+    public function get(array $fieldValues = [], ?SortOptions $sortOptions = null): Collection;
 
     /**
-     * Get models collection as pagination.
+     * Get entities collection as pagination.
      *
      * @param PagingInfo $paging Paging information
      * @param array $fieldValues Filters collection
@@ -126,7 +113,7 @@ interface IRepository
     ): LengthAwarePaginator;
 
     /**
-     * Get models collection as cursor.
+     * Get entities collection as cursor.
      *
      * @param CursorRequest $cursor Request with cursor data
      * @param array $fieldValues Filters collection
@@ -143,25 +130,6 @@ interface IRepository
     ): CursorResult;
 
     /**
-     * Retrieve list of entities that satisfied requested conditions.
-     *
-     * @param array $with Which relations should be preloaded
-     * @param array $withCounts Which related entities should be counted
-     * @param array $fieldValues Conditions that retrieved entities should satisfy
-     * @param SortOptions|null $sortOptions How list of items should be sorted
-     *
-     * @return Collection|Model[]
-     *
-     * @throws BadCriteriaException
-     */
-    public function getWith(
-        array $with,
-        array $withCounts = [],
-        array $fieldValues = [],
-        ?SortOptions $sortOptions = null
-    ): Collection;
-
-    /**
      * Return entities count.
      *
      * @param array $fieldValues Conditions that retrieved entities should satisfy
@@ -171,12 +139,4 @@ interface IRepository
      * @throws BadCriteriaException
      */
     public function count(array $fieldValues = []): int;
-
-    /**
-     * List of fields, allowed to use in the search.
-     * Should be determine in the inheritors. Determines the result of the list request of entities.
-     *
-     * @return array
-     */
-    public function getSearchableFields(): array;
 }

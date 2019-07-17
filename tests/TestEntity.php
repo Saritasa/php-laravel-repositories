@@ -3,6 +3,7 @@
 namespace Saritasa\LaravelRepositories\Tests;
 
 use Illuminate\Database\Eloquent\Model;
+use Saritasa\LaravelRepositories\Entities\EloquentEntity;
 
 /**
  * Entity for tests.
@@ -11,7 +12,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $field2
  * @property string $field3
  */
-class TestEntity extends Model
+class TestEntity extends EloquentEntity
 {
     public const FIELD_1 = 'field1';
     public const FIELD_2 = 'field2';

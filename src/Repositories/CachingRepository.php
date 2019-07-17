@@ -5,12 +5,12 @@ namespace Saritasa\LaravelRepositories\Repositories;
 use Closure;
 use Illuminate\Contracts\Cache\Repository as CacheRepository;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Psr\SimpleCache\InvalidArgumentException;
 use Saritasa\DingoApi\Paging\CursorRequest;
 use Saritasa\DingoApi\Paging\CursorResult;
 use Saritasa\DingoApi\Paging\PagingInfo;
+use Saritasa\LaravelRepositories\Contracts\IEntity;
 use Saritasa\LaravelRepositories\Contracts\IRepository;
 use Saritasa\LaravelRepositories\DTO\SortOptions;
 use Saritasa\LaravelRepositories\Exceptions\ModelNotFoundException;
@@ -77,6 +77,8 @@ class CachingRepository implements IRepository
      * @param Closure $dataGetter Function to get data in original repository
      *
      * @return mixed
+     *
+     * @throws InvalidArgumentException
      */
     protected function cached(string $key, Closure $dataGetter)
     {
@@ -85,52 +87,51 @@ class CachingRepository implements IRepository
         }
         $result = $dataGetter();
         $this->cacheRepository->put($key, $result, $this->cacheTimeout);
+
         return $result;
     }
 
     /**
      * {@inheritdoc}
+     *
+     * @throws InvalidArgumentException
      */
-    public function getModelValidationRules(): array
-    {
-        return $this->repository->getModelValidationRules();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function findOrFail($id): Model
+    public function findOrFail($id): IEntity
     {
         $result = $this->cachedFind($id);
         if (!$result) {
-            throw new ModelNotFoundException($this, "{$this->repository->getModelClass()} with ID=$id was not found");
+            throw new ModelNotFoundException($this, "{$this->repository->getEntityClass()} with ID=$id was not found");
         }
         return $result;
     }
 
     /**
      * {@inheritdoc}
+     *
+     * @throws InvalidArgumentException
      */
-    public function findWhere(array $fieldValues): ?Model
+    public function findWhere(array $fieldValues, ?SortOptions $sortOptions = null): ?IEntity
     {
-        $key = $this->prefix . ":find:" . md5(serialize($fieldValues));
-        return $this->cached($key, function () use ($fieldValues) {
-            return $this->repository->findWhere($fieldValues);
+        $key = $this->prefix . ":find:" . md5(serialize($fieldValues). serialize($sortOptions));
+        return $this->cached($key, function () use ($fieldValues, $sortOptions) {
+            return $this->repository->findWhere($fieldValues, $sortOptions);
         });
     }
 
     /**
      * {@inheritdoc}
      */
-    public function create(Model $model): Model
+    public function create(IEntity $model): IEntity
     {
         return $this->repository->create($model);
     }
 
     /**
      * {@inheritdoc}
+     *
+     * @throws InvalidArgumentException
      */
-    public function save(Model $model): Model
+    public function save(IEntity $model): IEntity
     {
         $result = $this->repository->save($model);
         $this->invalidate($model);
@@ -139,8 +140,10 @@ class CachingRepository implements IRepository
 
     /**
      * {@inheritdoc}
+     *
+     * @throws InvalidArgumentException
      */
-    public function delete(Model $model): void
+    public function delete(IEntity $model): void
     {
         $this->repository->delete($model);
         $this->invalidate($model);
@@ -148,30 +151,26 @@ class CachingRepository implements IRepository
 
     /**
      * {@inheritdoc}
+     *
+     * @throws InvalidArgumentException
      */
-    public function get(): Collection
+    public function get(array $fieldValues = [], ?SortOptions $sortOptions = null): Collection
     {
-        return $this->cached("$this->prefix:all", function () {
-            return $this->repository->get();
+        return $this->cached("$this->prefix:all", function () use ($fieldValues, $sortOptions) {
+            return $this->repository->get($fieldValues, $sortOptions);
         });
     }
 
     /**
      * {@inheritdoc}
+     *
+     * @throws InvalidArgumentException
      */
-    public function getWhere(array $fieldValues): Collection
-    {
-        $key = $this->prefix . ":get:" . md5(serialize($fieldValues));
-        return $this->cached($key, function () use ($fieldValues) {
-            return $this->repository->getWhere($fieldValues);
-        });
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getPage(PagingInfo $paging, array $fieldValues = []): LengthAwarePaginator
-    {
+    public function getPage(
+        PagingInfo $paging,
+        array $fieldValues = [],
+        ?SortOptions $sortOptions = null
+    ): LengthAwarePaginator {
         $key = $this->prefix . ":page:" . md5(serialize($paging->toArray()) . serialize($fieldValues));
         return $this->cached($key, function () use ($paging, $fieldValues) {
             return $this->repository->getPage($paging, $fieldValues);
@@ -180,9 +179,14 @@ class CachingRepository implements IRepository
 
     /**
      * {@inheritdoc}
+     *
+     * @throws InvalidArgumentException
      */
-    public function getCursorPage(CursorRequest $cursor, array $fieldValues = []): CursorResult
-    {
+    public function getCursorPage(
+        CursorRequest $cursor,
+        array $fieldValues = [],
+        ?SortOptions $sortOptions = null
+    ): CursorResult {
         $key = $this->prefix . ":page:" . md5(serialize($cursor->toArray()) . serialize($fieldValues));
         return $this->cached($key, function () use ($cursor, $fieldValues) {
             return $this->repository->getCursorPage($cursor, $fieldValues);
@@ -194,11 +198,11 @@ class CachingRepository implements IRepository
      *
      * @param string|int id Id to find
      *
-     * @return Model|null
+     * @return IEntity|null
      *
      * @throws RepositoryException
      */
-    private function find($id): ?Model
+    private function find($id): ?IEntity
     {
         try {
             return $this->repository->findOrFail($id);
@@ -212,9 +216,11 @@ class CachingRepository implements IRepository
      *
      * @param string|int $id Id to find
      *
-     * @return Model|null
+     * @return IEntity|null
+     *
+     * @throws InvalidArgumentException
      */
-    protected function cachedFind($id): ?Model
+    protected function cachedFind($id): ?IEntity
     {
         return $this->cached("$this->prefix:$id", function () use ($id) {
             return $this->find($id);
@@ -224,13 +230,13 @@ class CachingRepository implements IRepository
     /**
      * Invalidate model in cache.
      *
-     * @param Model $model Model to invalidate
+     * @param IEntity $model Entity to invalidate
      *
      * @return void
      *
      * @throws InvalidArgumentException
      */
-    protected function invalidate(Model $model): void
+    protected function invalidate(IEntity $model): void
     {
         $key = $this->prefix . ":" . $model->getKey();
         if ($this->cacheRepository->has($key)) {
@@ -242,9 +248,9 @@ class CachingRepository implements IRepository
     /**
      * {@inheritdoc}
      */
-    public function getModelClass(): string
+    public function getEntityClass(): string
     {
-        return $this->repository->getModelClass();
+        return $this->repository->getEntityClass();
     }
 
     /**
@@ -256,6 +262,7 @@ class CachingRepository implements IRepository
      * @return mixed
      *
      * @throws RepositoryException
+     * @throws InvalidArgumentException
      */
     public function __call(string $name, array $arguments)
     {
@@ -275,6 +282,8 @@ class CachingRepository implements IRepository
      * @param string $name Parameter name
      *
      * @return mixed
+     *
+     * @throws InvalidArgumentException
      */
     public function __get(string $name)
     {
@@ -285,21 +294,8 @@ class CachingRepository implements IRepository
 
     /**
      * {@inheritdoc}
-     */
-    public function getWith(
-        array $with,
-        array $withCounts = [],
-        array $where = [],
-        ?SortOptions $sortOptions = null
-    ): Collection {
-        $key = $this->prefix . ":get:" . md5(serialize($with) . serialize($withCounts) . serialize($where));
-        return $this->cached($key, function () use ($with, $withCounts, $where, $sortOptions) {
-            return $this->repository->getWith($with, $withCounts, $where, $sortOptions);
-        });
-    }
-
-    /**
-     * {@inheritdoc}
+     *
+     * @throws InvalidArgumentException
      */
     public function count(array $fieldValues = []): int
     {
@@ -307,13 +303,5 @@ class CachingRepository implements IRepository
         return $this->cached($key, function () use ($fieldValues) {
             return $this->repository->count($fieldValues);
         });
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getSearchableFields(): array
-    {
-        return $this->repository->getSearchableFields();
     }
 }
