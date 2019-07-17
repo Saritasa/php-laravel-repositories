@@ -12,15 +12,16 @@ use Mockery\MockInterface;
 use PHPUnit\Framework\TestCase;
 use Saritasa\DingoApi\Paging\PagingInfo;
 use Saritasa\Exceptions\PagingException;
+use Saritasa\LaravelRepositories\Entities\EloquentEntity;
 use Saritasa\LaravelRepositories\Exceptions\BadCriteriaException;
 use Saritasa\LaravelRepositories\Exceptions\ModelNotFoundException;
 use Saritasa\LaravelRepositories\Exceptions\RepositoryException;
-use Saritasa\LaravelRepositories\Repositories\Repository;
+use Saritasa\LaravelRepositories\Repositories\Adapters\EloquentAdapterRepository;
 
 /**
  * Tests of work repository class.
  */
-class RepositoryTest extends TestCase
+class EloquentAdapterRepositoryTest extends TestCase
 {
     /**
      * Connection to database mock.
@@ -62,8 +63,8 @@ class RepositoryTest extends TestCase
             $this->expectException($exception);
         }
 
-        $repository = new Repository($className);
-        $this->assertEquals($className, $repository->getModelClass());
+        $repository = new EloquentAdapterRepository($className);
+        $this->assertEquals($className, $repository->getEntityClass());
     }
 
     /**
@@ -78,10 +79,10 @@ class RepositoryTest extends TestCase
             ['className', RepositoryException::class],
             [get_class(new class{
             }), RepositoryException::class],
-            [Repository::class, RepositoryException::class],
+            [EloquentAdapterRepository::class, RepositoryException::class],
             [RepositoryException::class, RepositoryException::class],
-            [Model::class, RepositoryException::class],
-            [get_class(new class extends Model{
+            [EloquentEntity::class, RepositoryException::class],
+            [get_class(new class extends EloquentEntity {
             }), null],
             [TestEntity::class, null],
         ];
@@ -106,12 +107,12 @@ class RepositoryTest extends TestCase
         /**
          * Entity mock to create.
          *
-         * @var Model|MockInterface $entity
+         * @var EloquentEntity|MockInterface $entity
          */
         $entity = Mockery::mock(TestEntity::class)->makePartial();
         $entity->shouldReceive('save')->andReturn($createResult);
 
-        $repository = new Repository($servedClass);
+        $repository = new EloquentAdapterRepository($servedClass);
 
         if ($exception) {
             $this->expectException($exception);
@@ -140,12 +141,12 @@ class RepositoryTest extends TestCase
         /**
          * Entity mock to save.
          *
-         * @var Model|MockInterface $entity
+         * @var EloquentEntity|MockInterface $entity
          */
         $entity = Mockery::mock(TestEntity::class)->makePartial();
         $entity->shouldReceive('save')->andReturn($createResult);
 
-        $repository = new Repository($servedClass);
+        $repository = new EloquentAdapterRepository($servedClass);
 
         if ($exception) {
             $this->expectException($exception);
@@ -162,7 +163,7 @@ class RepositoryTest extends TestCase
      */
     public function saveEntityData(): array
     {
-        $servedEntity = get_class(new class extends Model{
+        $servedEntity = get_class(new class extends EloquentEntity{
         });
 
         return [
@@ -196,7 +197,7 @@ class RepositoryTest extends TestCase
         /**
          * Entity mock to delete.
          *
-         * @var Model|MockInterface $entity
+         * @var EloquentEntity|MockInterface $entity
          */
         $entity = Mockery::mock(TestEntity::class)->makePartial();
         if ($isExceptionOnEloquentSide) {
@@ -205,7 +206,7 @@ class RepositoryTest extends TestCase
             $entity->shouldReceive('delete')->andReturn($createResult);
         }
 
-        $repository = new Repository($servedClass);
+        $repository = new EloquentAdapterRepository($servedClass);
 
         $this->expectException($exception);
 
@@ -219,7 +220,7 @@ class RepositoryTest extends TestCase
      */
     public function deleteEntityData(): array
     {
-        $servedEntity = get_class(new class extends Model{
+        $servedEntity = get_class(new class extends EloquentEntity{
         });
 
         return [
@@ -230,67 +231,6 @@ class RepositoryTest extends TestCase
             [TestEntity::class, false, true, RepositoryException::class],
             [TestEntity::class, true, true, RepositoryException::class],
         ];
-    }
-
-    /**
-     * Tests that repository returns validation rules from model.
-     *
-     * @return void
-     *
-     * @throws RepositoryException
-     * @throws InvalidArgumentException
-     */
-    public function testGetValidationRulesWhenItStoresInModelMethod(): void
-    {
-        $servedEntity = new class extends Model {
-            public function getValidationRules(): array
-            {
-                return ['rule1' => ['required', 'string', 'min:1']];
-            }
-        };
-
-        $repository = new Repository(get_class($servedEntity));
-        $actualValidationRules = $repository->getModelValidationRules();
-        $this->assertEquals(['rule1' => ['required', 'string', 'min:1']], $actualValidationRules);
-    }
-
-    /**
-     * Tests that get method returns correct results.
-     *
-     * @return void
-     *
-     * @throws RepositoryException
-     * @throws InvalidArgumentException
-     */
-    public function testGetMethod(): void
-    {
-        $field1 = 'string';
-        $field2 = 2;
-        $field3 = false;
-
-        $results = [[
-            TestEntity::FIELD_2 => $field2,
-            TestEntity::FIELD_1 => $field1,
-            TestEntity::FIELD_3 => $field3,
-        ]];
-
-        $this->connection->shouldReceive('select')->andReturn($results);
-
-        $repository = new Repository(TestEntity::class);
-        $actualResults = $repository->get();
-
-        $this->assertEquals(1, $actualResults->count());
-        /**
-         * Actual entity to check.
-         *
-         * @var Model $actualEntity
-         */
-        $actualEntity = $actualResults->first();
-
-        $this->assertEquals(TestEntity::class, get_class($actualEntity));
-        $this->assertEquals($field1, $actualEntity->getAttribute(TestEntity::FIELD_1));
-        $this->assertEquals($field2, $actualEntity->getAttribute(TestEntity::FIELD_2));
-        $this->assertEquals($field3, $actualEntity->getAttribute(TestEntity::FIELD_3));
     }
 
     /**
@@ -325,11 +265,11 @@ class RepositoryTest extends TestCase
             $this->expectException($exception);
         }
 
-        $repository = new Repository($entityClass);
+        $repository = new EloquentAdapterRepository($entityClass);
         $actualEntity = $repository->findOrFail($id);
 
         $this->assertEquals($entityClass, get_class($actualEntity));
-        $this->assertEquals($actualEntity->getAttribute('id'), $id);
+        $this->assertEquals($actualEntity->getParameter('id'), $id);
     }
 
     /**
@@ -339,7 +279,7 @@ class RepositoryTest extends TestCase
      */
     public function getFindOrFailData(): array
     {
-        $entityWithStringKeyType = get_class(new class extends Model {
+        $entityWithStringKeyType = get_class(new class extends EloquentEntity{
             protected $keyType = 'string';
         });
 
@@ -399,7 +339,7 @@ class RepositoryTest extends TestCase
                 }
             );
 
-        $repository = new Repository(TestEntity::class);
+        $repository = new EloquentAdapterRepository(TestEntity::class);
         $actualCount = $repository->count($whereConditions);
         $this->assertEquals($resultCount, $actualCount);
     }
@@ -462,7 +402,7 @@ class RepositoryTest extends TestCase
      * @throws RepositoryException
      * @throws InvalidArgumentException
      */
-    public function testGetWhereMethod(
+    public function testGetMethod(
         array $resultsData,
         array $whereConditions,
         string $expectedQuery,
@@ -479,14 +419,14 @@ class RepositoryTest extends TestCase
                 }
             );
 
-        $repository = new Repository(TestEntity::class);
+        $repository = new EloquentAdapterRepository(TestEntity::class);
 
         /**
          * Models collection returned from DB.
          *
          * @var Model[] $actualResults
          */
-        $actualResults = $repository->getWhere($whereConditions);
+        $actualResults = $repository->get($whereConditions);
         $this->assertEquals(count($resultsData), count($actualResults));
         foreach ($actualResults as $count => $entity) {
             $this->assertEquals(TestEntity::class, get_class($entity));
@@ -574,7 +514,7 @@ class RepositoryTest extends TestCase
                 }
             );
 
-        $repository = new Repository(TestEntity::class);
+        $repository = new EloquentAdapterRepository(TestEntity::class);
 
         /**
          * Models collection returned from DB.
@@ -583,7 +523,7 @@ class RepositoryTest extends TestCase
          */
         $actualResult = $repository->findWhere($whereConditions);
         $this->assertEquals(TestEntity::class, get_class($actualResult));
-        $this->assertEquals($resultsData, $actualResult->getAttributes());
+        $this->assertEquals($resultsData, $actualResult->toArray());
     }
 
     /**
@@ -691,7 +631,7 @@ class RepositoryTest extends TestCase
                 }
             );
 
-        $repository = new Repository(TestEntity::class);
+        $repository = new EloquentAdapterRepository(TestEntity::class);
 
         $paginator = $repository->getPage($pagingInfo, $whereConditions);
         $this->assertEquals(count($resultsData), $paginator->total());

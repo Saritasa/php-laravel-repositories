@@ -35,7 +35,7 @@ class ModelNotFoundException extends RepositoryException
      */
     public function __construct(IRepository $repository, string $id, ?Throwable $previous = null)
     {
-        $this->modelClass = $repository->getModelClass();
+        $this->modelClass = $repository->getEntityClass();
         $this->id = $id;
         parent::__construct($repository, 'message', 404, $previous);
     }

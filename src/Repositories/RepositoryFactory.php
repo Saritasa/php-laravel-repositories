@@ -4,10 +4,12 @@ namespace Saritasa\LaravelRepositories\Repositories;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Container\Container;
-use Illuminate\Database\Eloquent\Model;
+use Saritasa\LaravelRepositories\Contracts\IEntity;
 use Saritasa\LaravelRepositories\Contracts\IRepository;
 use Saritasa\LaravelRepositories\Contracts\IRepositoryFactory;
+use Saritasa\LaravelRepositories\Entities\EloquentEntity;
 use Saritasa\LaravelRepositories\Exceptions\RepositoryRegisterException;
+use Saritasa\LaravelRepositories\Repositories\Adapters\EloquentAdapterRepository;
 
 /**
  * {@inheritdoc}
@@ -46,7 +48,11 @@ class RepositoryFactory implements IRepositoryFactory
     }
 
 
-    /** {@inheritdoc} */
+    /**
+     * {@inheritdoc}
+     *
+     * @throws RepositoryRegisterException
+     */
     public function getRepository(string $modelClass): IRepository
     {
         if (empty($this->sharedInstances[$modelClass])) {
@@ -64,14 +70,26 @@ class RepositoryFactory implements IRepositoryFactory
      * @return IRepository
      *
      * @throws BindingResolutionException
+     * @throws RepositoryRegisterException
      */
     protected function build(string $modelClass): IRepository
     {
-        $repositoryClass = $this->registeredRepositories[$modelClass] ?? Repository::class;
+        $repositoryClass = $this->registeredRepositories[$modelClass] ?? null;
+
+        if (!$repositoryClass) {
+            switch (true) {
+                case $modelClass instanceof EloquentEntity:
+                    $repositoryClass = EloquentAdapterRepository::class;
+                    break;
+                default:
+                    throw new RepositoryRegisterException();
+            }
+        }
 
         $parameters = [];
 
-        if ($repositoryClass === Repository::class || is_subclass_of($repositoryClass, Repository::class)
+        if ($repositoryClass === EloquentAdapterRepository::class
+            || is_subclass_of($repositoryClass, EloquentAdapterRepository::class)
         ) {
             $parameters = ['modelClass' => $modelClass];
         }
@@ -82,8 +100,8 @@ class RepositoryFactory implements IRepositoryFactory
     /** {@inheritdoc} */
     public function register(string $modelClass, string $repositoryClass): void
     {
-        if (!is_subclass_of($modelClass, Model::class)) {
-            throw new RepositoryRegisterException("$modelClass must extend " . Model::class);
+        if (!is_subclass_of($modelClass, IEntity::class)) {
+            throw new RepositoryRegisterException("$modelClass must extend " . IEntity::class);
         }
         if (!is_subclass_of($repositoryClass, IRepository::class)) {
             throw new RepositoryRegisterException("$repositoryClass must implement " . IRepository::class);
