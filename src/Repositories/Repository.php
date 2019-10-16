@@ -188,6 +188,24 @@ class Repository implements IRepository
     {
         return $this->query()->get();
     }
+    
+    /**
+     * @param Builder $query Query builder
+     * @param SortOptions|SortOptions[] $sortOptions 
+     * 
+     * @return Builder
+     */
+    private function applyOrderBy(Builder $query, $sortOptions): Builder
+    {
+        if ($sortOptions instanceof SortOptions) {
+            $query->orderBy($sortOptions->orderBy, $sortOptions->sortOrder);
+        } elseif (is_array($sortOptions)) {
+            foreach ($sortOptions as $sortOption) {
+                $query->orderBy($sortOption->orderBy, $sortOption->sortOrder);
+            }
+        }
+        return $query;
+    }
 
     /** {@inheritdoc} */
     public function getPage(
@@ -198,14 +216,7 @@ class Repository implements IRepository
         $builder = $this
             ->query()
             ->when($sortOptions, function (Builder $query) use ($sortOptions) {
-                if ($sortOptions instanceof SortOptions) {
-                    return $query->orderBy($sortOptions->orderBy, $sortOptions->sortOrder);
-                } elseif (is_array($sortOptions)) {
-                    foreach ($sortOptions as $sortOption) {
-                        $query->orderBy($sortOption->orderBy, $sortOption->sortOrder);
-                    }
-                    return $query;
-                }
+                return $this->applyOrderBy($query, $sortOptions);
             });
         $builder->addNestedWhereQuery($this->getNestedWhereConditions($builder->getQuery(), $fieldValues));
 
@@ -221,14 +232,7 @@ class Repository implements IRepository
         $builder = $this
             ->query()
             ->when($sortOptions, function (Builder $query) use ($sortOptions) {
-                if ($sortOptions instanceof SortOptions) {
-                    return $query->orderBy($sortOptions->orderBy, $sortOptions->sortOrder);
-                } elseif (is_array($sortOptions)) {
-                    foreach ($sortOptions as $sortOption) {
-                        $query->orderBy($sortOption->orderBy, $sortOption->sortOrder);
-                    }
-                    return $query;
-                }
+                return $this->applyOrderBy($query, $sortOptions);
             });
         $builder->addNestedWhereQuery($this->getNestedWhereConditions($builder->getQuery(), $fieldValues));
 
@@ -351,7 +355,7 @@ class Repository implements IRepository
      * @param array $with Which relations should be preloaded
      * @param array|null $withCounts Which related entities should be counted
      * @param array|null $where Conditions that retrieved entities should satisfy
-     * @param SortOptions|null $sortOptions How list of item should be sorted
+     * @param SortOptions|SortOptions[]|null $sortOptions How list of item should be sorted
      *
      * @return Builder
      *
@@ -361,7 +365,7 @@ class Repository implements IRepository
         array $with,
         ?array $withCounts = null,
         ?array $where = null,
-        ?SortOptions $sortOptions = null
+        $sortOptions = null
     ): Builder {
         return $this->query()
             ->when($with, function (Builder $query) use ($with) {
@@ -374,7 +378,7 @@ class Repository implements IRepository
                 return $query->where($where);
             })
             ->when($sortOptions, function (Builder $query) use ($sortOptions) {
-                return $query->orderBy($sortOptions->orderBy, $sortOptions->sortOrder);
+                return $this->applyOrderBy($query, $sortOptions);
             });
     }
 
@@ -404,7 +408,7 @@ class Repository implements IRepository
         array $with,
         ?array $withCounts = null,
         ?array $where = null,
-        ?SortOptions $sortOptions = null
+        $sortOptions = null
     ): Collection {
         $builder = $this->query()
             ->with($with)
@@ -412,7 +416,7 @@ class Repository implements IRepository
                 return $query->withCount($withCounts);
             })
             ->when($sortOptions, function (Builder $query) use ($sortOptions) {
-                return $query->orderBy($sortOptions->orderBy, $sortOptions->sortOrder);
+                return $this->applyOrderBy($query, $sortOptions);
             });
 
         if ($where) {

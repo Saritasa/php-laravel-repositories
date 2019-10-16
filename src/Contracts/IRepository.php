@@ -148,7 +148,7 @@ interface IRepository
      * @param array $with Which relations should be preloaded
      * @param array $withCounts Which related entities should be counted
      * @param array $fieldValues Conditions that retrieved entities should satisfy
-     * @param SortOptions|null $sortOptions How list of items should be sorted
+     * @param SortOptions|SortOptions[]|null $sortOptions How list of items should be sorted
      *
      * @return Collection|Model[]
      *
@@ -158,7 +158,7 @@ interface IRepository
         array $with,
         array $withCounts = [],
         array $fieldValues = [],
-        ?SortOptions $sortOptions = null
+        $sortOptions = null
     ): Collection;
 
     /**
