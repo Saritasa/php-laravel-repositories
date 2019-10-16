@@ -190,6 +190,8 @@ class Repository implements IRepository
     }
     
     /**
+     * Apply order to query by sort options.
+     * 
      * @param Builder $query Query builder
      * @param SortOptions|SortOptions[] $sortOptions 
      * 
