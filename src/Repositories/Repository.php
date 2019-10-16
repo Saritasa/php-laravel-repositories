@@ -193,12 +193,19 @@ class Repository implements IRepository
     public function getPage(
         PagingInfo $paging,
         array $fieldValues = [],
-        ?SortOptions $sortOptions = null
+        $sortOptions = null
     ): LengthAwarePaginator {
         $builder = $this
             ->query()
             ->when($sortOptions, function (Builder $query) use ($sortOptions) {
-                return $query->orderBy($sortOptions->orderBy, $sortOptions->sortOrder);
+                if ($sortOptions instanceof SortOptions) {
+                    return $query->orderBy($sortOptions->orderBy, $sortOptions->sortOrder);
+                } elseif (is_array($sortOptions)) {
+                    foreach ($sortOptions as $sortOption) {
+                        $query->orderBy($sortOption->orderBy, $sortOption->sortOrder);
+                    }
+                    return $query;
+                }
             });
         $builder->addNestedWhereQuery($this->getNestedWhereConditions($builder->getQuery(), $fieldValues));
 
@@ -209,12 +216,19 @@ class Repository implements IRepository
     public function getCursorPage(
         CursorRequest $cursor,
         array $fieldValues = [],
-        ?SortOptions $sortOptions = null
+        $sortOptions = null
     ): CursorResult {
         $builder = $this
             ->query()
             ->when($sortOptions, function (Builder $query) use ($sortOptions) {
-                return $query->orderBy($sortOptions->orderBy, $sortOptions->sortOrder);
+                if ($sortOptions instanceof SortOptions) {
+                    return $query->orderBy($sortOptions->orderBy, $sortOptions->sortOrder);
+                } elseif (is_array($sortOptions)) {
+                    foreach ($sortOptions as $sortOption) {
+                        $query->orderBy($sortOption->orderBy, $sortOption->sortOrder);
+                    }
+                    return $query;
+                }
             });
         $builder->addNestedWhereQuery($this->getNestedWhereConditions($builder->getQuery(), $fieldValues));
 
