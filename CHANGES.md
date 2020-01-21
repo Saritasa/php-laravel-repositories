@@ -1,5 +1,9 @@
 # Changes History
 
+3.5.0
+-----
+Declare compatibility with Laravel 6
+
 3.4.0
 ------
 + Remove TypeHinting in Repository to make compatibility with other DB
