@@ -1,8 +1,19 @@
 # Changes History
 
-3.5.0
+3.8.0
 -----
-Declare compatibility with Laravel 6
++ Declare compatibility with Laravel 6
+
+3.7.0
+-----
++ Add ability to sort by multiple fields
+
+3.6.0
+-----
++ Add ability to create filters with check on relation existing
+
+3.5.0
++ Add ability to use sorting when need to get cursor or paging result
 
 3.4.0
 ------
