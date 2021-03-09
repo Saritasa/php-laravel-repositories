@@ -1,7 +1,8 @@
 
 # Laravel Repositories  
-  
-[![Build Status](https://travis-ci.org/Saritasa/php-laravel-repositories.svg?branch=master)](https://travis-ci.org/Saritasa/php-laravel-repositories)
+
+[![PHP Unit](https://github.com/Saritasa/php-laravel-repositories/workflows/PHP%20Unit/badge.svg)](https://github.com/Saritasa/php-laravel-repositories/actions)
+[![PHP CodeSniffer](https://github.com/Saritasa/php-laravel-repositories/workflows/PHP%20Codesniffer/badge.svg)](https://github.com/Saritasa/php-laravel-repositories/actions)
 [![CodeCov](https://codecov.io/gh/Saritasa/php-laravel-repositories/branch/master/graph/badge.svg)](https://codecov.io/gh/Saritasa/php-laravel-repositories)
 [![Release](https://img.shields.io/github/release/saritasa/php-laravel-repositories.svg)](https://github.com/Saritasa/php-laravel-repositories/releases)
 [![PHPv](https://img.shields.io/packagist/php-v/saritasa/laravel-repositories.svg)](http://www.php.net)
