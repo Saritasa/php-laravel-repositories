@@ -1,4 +1,8 @@
 # Changes History
+4.0.0
+-----
++ Declare compatibility with Laravel 11
++ Updated saritasa/dingo-api-custom to new major version
 
 3.8.0
 -----
