@@ -13,13 +13,16 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '7.4'
+          php-version: '8.1'
           
       - name: Validate composer.json and composer.lock
         run: composer validate
+
+      - name: Config composer
+        run: composer config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
       
       - name: Install dependencies
-        run: composer install --dev --prefer-dist --no-progress --no-suggest --no-interaction
+        run: composer install --prefer-dist --no-progress --no-interaction
         
       - name: Run code sniffer
         run: vendor/bin/phpcs

@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php-versions: [ '7.1', '7.2', '7.3', '7.4' ]
+        php-versions: [ '8.1' ]
     name: PHP ${{ matrix.php-versions }} - PHPUnit
     steps:
       - name: Checkout
@@ -25,8 +25,11 @@ jobs:
       - name: Validate composer.json and composer.lock
         run: composer validate
 
+      - name: Config composer
+        run: composer config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
+
       - name: Install dependencies
-        run: composer install --dev --prefer-dist --no-progress --no-suggest --no-interaction
+        run: composer install --prefer-dist --no-progress --no-interaction
 
       - name: Run test suite
         run: vendor/bin/phpunit --coverage-clover=coverage.xml

@@ -310,7 +310,7 @@ class RepositoryTest extends TestCase
      * @throws InvalidArgumentException
      */
     public function testFindOrFailMethod(
-        $id,
+        mixed $id,
         string $entityClass,
         bool $isExceptionOnEloquentSide,
         ?string $exception
