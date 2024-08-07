@@ -19,7 +19,7 @@ jobs:
         run: composer validate
       
       - name: Install dependencies
-        run: composer install --dev --prefer-dist --no-progress --no-suggest --no-interaction
+        run: composer install --prefer-dist --no-progress --no-interaction
         
       - name: Run code sniffer
         run: vendor/bin/phpcs
